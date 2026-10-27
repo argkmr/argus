@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Argus chat controls fixture</title><link rel="stylesheet" href="/styles.css"></head>
+<body><div class="app-shell"><div id="toolbar"></div><main style="padding:20px;overflow:auto"><h2 id="view">Repository chat</h2><p>Isolated fixture: no agent or real project data is used.</p><section id="conversation" class="chat-thread"></section><pre id="result"></pre><button id="theme">Toggle theme</button></main></div>
+<script type="module">
+import { createPromptEditor, promptEditButton } from '/prompt-editor.js';
+const template = new DOMParser().parseFromString(await (await fetch('/index.html')).text(), 'text/html');
+const toolbar = template.querySelector('.titlebar');
+toolbar.style.height = '56px';
+document.getElementById('toolbar').replaceWith(toolbar);
+toolbar.querySelector('#repo-tabs').innerHTML = ['post-order-cx-bff','slack-alerting-spring-boot-starter','invoice'].map((name)=>`<button class="repo-tab">${name}</button>`).join('');
+const task={id:'fixture-task',repositoryId:'fixture-repo',messages:[{id:'first',role:'user',content:'Explain the current flow in detail, including how errors reach Slack. Keep the original conversation when I edit this request.',attachments:[{id:'fixture-file',name:'Architecture.docx'}]}]};
+let scope='repository';
+function render(){const section=document.getElementById('conversation');section.innerHTML=`<article class="chat-message user"><div class="chat-message-body"><div class="chat-message-meta">You · today ${promptEditButton(scope,task,task.messages[0])}</div><div class="chat-message-content"><p>${task.messages[0].content}</p></div></div></article>`;}
+const editor=createPromptEditor({document,loadTask:async()=>task,submit:async(input)=>{document.getElementById('result').textContent=`Revised ${input.scope} request: ${input.prompt}\nOriginal kept: ${task.messages[0].content}\nAttachment kept: ${input.message.attachments[0].name}`;}});
+document.getElementById('conversation').onclick=event=>{const button=event.target.closest('[data-edit-prompt]');if(button) editor.open({scope,taskId:task.id,messageId:'first',trigger:button});};
+toolbar.querySelector('#nexus-shortcut').onclick=()=>{scope='global';document.getElementById('view').textContent='Nexus';toolbar.querySelector('#nexus-shortcut').classList.add('view-active');render();};
+document.getElementById('theme').onclick=()=>document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light';
+render();
+</script></body></html>

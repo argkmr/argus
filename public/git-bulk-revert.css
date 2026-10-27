@@ -1,0 +1,38 @@
+.change-selection-toolbar { flex-wrap: wrap; align-items: flex-start; }
+.change-selection-toolbar > div { flex: 1 1 190px; flex-wrap: wrap; }
+.change-selection-toolbar > strong { line-height: 28px; }
+.change-selection-toolbar button:disabled { opacity: .45; cursor: wait; }
+.change-selection-toolbar #revert-selected-files { border-color: color-mix(in srgb, var(--red) 35%, var(--line)); color: var(--text); }
+.change-selection-toolbar #revert-selected-files:hover:not(:disabled) { color: var(--red); background: color-mix(in srgb, var(--red) 8%, var(--surface)); }
+#git-bulk-revert-status { flex: 0 0 auto; min-width: 0; max-height: 180px; overflow: auto; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--surface-2); font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; white-space: pre-wrap; }
+#git-bulk-revert-status[hidden] { display: none; }
+#git-bulk-revert-status > strong { display: block; font-weight: 550; }
+#git-bulk-revert-status details { margin-top: 8px; }
+#git-bulk-revert-status summary { cursor: pointer; color: var(--muted); }
+#git-bulk-revert-status p { margin: 7px 0; }
+#git-bulk-revert-status code { display: block; margin-top: 6px; font-size: 10px; }
+#git-bulk-revert-status.git-bulk-revert-failed > strong { color: var(--red); }
+.git-bulk-revert-dialog { width: min(680px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); margin: auto; padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--text); box-shadow: 0 22px 80px #0007; overflow: auto; }
+#git-bulk-revert-dialog[open] { position: fixed; inset: 0; width: min(680px, calc(100vw - 32px)); height: fit-content; max-height: calc(100dvh - 40px); margin: auto; padding: 0; display: flex; flex-direction: column; align-items: stretch; justify-items: stretch; overflow: hidden; background: var(--surface); backdrop-filter: none; }
+.git-bulk-revert-header { display: flex; flex-direction: column; gap: 8px; padding: 22px 24px 18px; border-bottom: 1px solid var(--line); }
+.git-bulk-revert-header small { color: var(--muted); font-size: 10px; letter-spacing: .08em; }
+.git-bulk-revert-header h2 { margin: 0 0 6px; font-size: 22px; line-height: 1.25; }
+.git-bulk-revert-header strong { font-size: 14px; }
+.git-bulk-revert-header code, .git-bulk-revert-recovery { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.git-bulk-revert-body { min-height: 0; overflow: auto; padding: 18px 24px 22px; font-size: 13px; line-height: 1.55; }
+.git-bulk-revert-header, .git-bulk-revert-footer { flex-shrink: 0; }
+.git-bulk-revert-body p { margin: 0 0 14px; }
+.git-bulk-revert-legend { padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); }
+.git-bulk-revert-legend p:last-child { margin: 0; }
+.git-bulk-revert-files { list-style: none; padding: 0; margin: 16px 0; max-height: min(32vh, 300px); overflow: auto; border-block: 1px solid var(--line); }
+.git-bulk-revert-files li { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+.git-bulk-revert-files li:last-child { border-bottom: 0; }
+.git-bulk-revert-files code { font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.git-bulk-revert-scope { padding: 2px 6px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface-2); color: var(--muted); font-size: 10px; text-align: center; }
+.git-bulk-revert-safety { color: var(--muted); }
+.git-bulk-revert-recovery { display: block; margin-top: 5px; }
+.git-bulk-revert-footer { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 14px 24px; border-top: 1px solid var(--line); background: var(--surface); }
+.git-bulk-revert-footer button { min-height: 38px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); color: var(--text); font: inherit; font-size: 13px; }
+.git-bulk-revert-footer .git-bulk-revert-confirm { color: var(--red); border-color: color-mix(in srgb, var(--red) 45%, var(--line)); background: color-mix(in srgb, var(--red) 8%, var(--surface)); }
+.git-bulk-revert-footer button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 480px) { .git-bulk-revert-header, .git-bulk-revert-body, .git-bulk-revert-footer { padding-inline: 16px; } .git-bulk-revert-files li { grid-template-columns: 60px minmax(0, 1fr); gap: 8px; } }

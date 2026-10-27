@@ -1,0 +1,7 @@
+.diagram-selection-tools { display:flex; align-items:center; gap:4px; }
+.diagram-toolbar .diagram-selection-delete { display:inline-flex; align-items:center; gap:4px; }
+.diagram-selection-delete:not(:disabled) { color:var(--red,#ed8b8b); }
+.diagram-selection-count { color:var(--muted); font-size:10px; white-space:nowrap; padding:0 4px; }
+.diagram-flow[data-selection-mode="select"] .react-flow__pane { cursor:crosshair; }
+.diagram-flow .react-flow__selection,
+.diagram-flow .react-flow__nodesselection-rect { background:color-mix(in srgb,var(--accent) 10%,transparent); border:1px solid color-mix(in srgb,var(--accent) 80%,var(--text)); }

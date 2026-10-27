@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-font-family="comic-sans">
+<head><meta charset="utf-8"><title>Argus Find and Version Control · isolated fixture</title>
+<link rel="stylesheet" href="/public/styles.css"><link rel="stylesheet" href="/public/font-family.css">
+<style>
+body { margin:0; overflow:auto; min-height:100vh; height:auto; }
+.qa-controls { position:relative; margin:20px 50px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; z-index:200; }
+.qa-controls button,.qa-controls select { font-size:13px;padding:8px 12px; }
+.qa-controls p { width:100%; font-size:12px; color:var(--muted); }
+.qa-diff { margin:20px 55px; height:480px; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+.qa-diff header { padding:16px; border-bottom:1px solid var(--line); font-size:15px; }
+.qa-diff .diff-pane-scroller { overflow:auto; height:calc(100% - 55px); outline:none; }
+.qa-diff pre { padding:20px; margin:0; line-height:1.8; }
+.qa-source { width:calc(100% - 40px); height:330px; margin:20px; font-family:monospace; }
+#qa-status { white-space:pre-wrap; margin:20px 55px; font:13px system-ui; }
+#workspace-task-rail-toggle,#agents-toggle,#version-control-rail-toggle { top:auto!important; position:relative!important; width:auto!important; height:38px!important; writing-mode:horizontal-tb!important; }
+.qa-hidden-context { display:none; }
+</style></head>
+<body>
+<nav class="qa-controls">
+  <button id="open-diff">Find in read-only diff</button><button id="open-source">Find in editable/source textarea</button>
+  <label>View <select id="qa-view"><option value="repository">Repository Tasks</option><option value="orchestration">Agents</option><option value="global">Nexus</option><option value="services">Services</option><option value="api">API Client</option><option value="json">JSON Explorer</option></select></label>
+  <label>Theme <select id="qa-theme"><option>dark</option><option>light</option></select></label>
+  <button id="workspace-task-rail-toggle">Tasks</button><button id="agents-toggle">Agents</button><button id="version-control-rail-toggle">Version Control</button>
+  <p>Isolated production helper fixture. No application startup, API requests, credentials, Git operations or saved-user-data access. Type and edit “slack”, use Enter / Shift+Enter, and Escape. Change views to inspect Version Control visibility.</p>
+</nav>
+<section class="diff-window qa-diff"><header>Synthetic configuration · read-only diff</header><div id="qa-diff-text" class="diff-pane-scroller" tabindex="0"><pre></pre></div></section>
+<section class="dialog-card qa-diff"><header>Synthetic source · textarea</header><textarea id="qa-source-text" class="qa-source" spellcheck="false"></textarea></section>
+<pre id="qa-status" role="status"></pre>
+<div class="qa-hidden-context"><details id="app-menu"></details><div class="ai-canvas"></div><div class="global-codex-layout"></div></div>
+<script type="module">
+const source = await (await fetch('/public/app.js')).text();
+const page = new DOMParser().parseFromString(await (await fetch('/public/index.html')).text(), 'text/html');
+document.body.append(document.importNode(page.querySelector('#find-bar'), true));
+const text=Array.from({length:180},(_,index)=>`${String(index+1).padStart(3)}  ${index%4===0?'slack':index%4===1?'service':'settings'}.configuration.${index}: value${index%7===0?' SLACK event':''}`).join('\n');
+document.querySelector('#qa-diff-text pre').textContent=text;
+document.querySelector('#qa-source-text').value=text;
+const declaration=name=>{const start=source.indexOf(`function ${name}(`); if(start<0)throw Error(name);return source.slice(start,source.indexOf('\n}',start)+2);};
+const find=source.slice(source.indexOf('function visibleElement('), source.indexOf('const pendingGetRequests'));
+const docks=['setTaskPanelCollapsed','setVersionControlDockOpen','activeTaskPanelScope','syncWorkspaceRail'].map(declaration).join('\n');
+const runtime=new Function(`
+  const $=selector=>document.querySelector(selector), $$=selector=>[...document.querySelectorAll(selector)];
+  const preferences=new Map(); const localStorage={setItem:(key,value)=>preferences.set(key,value)};
+  const state={currentView:'repository',activeRepository:{id:'fixture'},workspace:{repositories:[{id:'fixture'}]},findTarget:null,findSurface:null,findQuery:'',findMatchIndex:-1,findHighlightOverlay:null,findHighlightRange:null,findComposing:false};
+  const escapeHtml=value=>value.replaceAll('&','&amp;').replaceAll('<','&lt;');
+  const toast=message=>document.querySelector('#qa-status').textContent=message;
+  const closeOpenDialogs=()=>true; const refreshVisibleGitStatus=async()=>{};
+  ${find}
+  ${docks}
+  bindFindBar();
+  return {state,openFindBar,setVersionControlDockOpen,syncWorkspaceRail,preferences};
+`)();
+function report(){document.querySelector('#qa-status').textContent=JSON.stringify({view:runtime.state.currentView,gitVisible:!document.querySelector('#version-control-rail-toggle').classList.contains('hidden'),gitOpen:document.body.classList.contains('version-control-dock-open'),nativeHighlight:Boolean(window.CSS?.highlights)},null,2);}
+document.querySelector('#open-diff').onclick=()=>{document.querySelector('#qa-diff-text').focus();runtime.openFindBar();};
+document.querySelector('#open-source').onclick=()=>{document.querySelector('#qa-source-text').focus();runtime.openFindBar();};
+document.querySelector('#qa-view').onchange=event=>{runtime.state.currentView=event.target.value;document.body.dataset.view=event.target.value;document.body.classList.toggle('workspace-tool-active',!['global','repository'].includes(event.target.value));runtime.syncWorkspaceRail();report();};
+document.querySelector('#qa-theme').onchange=event=>document.documentElement.dataset.theme=event.target.value;
+document.querySelector('#version-control-rail-toggle').onclick=()=>{runtime.setVersionControlDockOpen(!document.body.classList.contains('version-control-dock-open'));report();};
+document.body.dataset.view='repository'; runtime.syncWorkspaceRail(); report();
+</script></body></html>

@@ -1,0 +1,70 @@
+#repository-workbench { height: calc(100% - var(--repository-context-height, 48px)); min-width: 0; min-height: 0; }
+body:not(.task-context-visible) #repository-workbench { height: 100%; }
+#repository-workbench > .ai-canvas { height: 100%; }
+#repository-ide-host[hidden] { display: none !important; }
+.repository-context-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; margin-left: auto; }
+.repository-context-actions #project-structure-toggle,
+.repository-context-actions #repository-chat-toggle { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; height: 32px; min-height: 32px; margin: 0; padding: 0 11px; border-radius: 7px; font-size: 11px; line-height: 1; }
+.repository-context-actions #project-structure-toggle strong { font-size: inherit; }
+#repository-chat-toggle { border: 1px solid var(--line); color: var(--muted); background: var(--surface); font-weight: 600; }
+#repository-chat-toggle[aria-pressed="true"] { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); }
+/* Keep the conversation beside code, with a separately persisted chat width. */
+body.repository-ide-enabled #repository-workbench { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 6px minmax(0, var(--ide-chat-width, 36%)); grid-template-rows: minmax(0, 1fr); padding-left: var(--tools-rail-width); }
+.ide-splitter { position: relative; min-width: 0; min-height: 0; touch-action: none; user-select: none; cursor: col-resize; background: var(--bg); outline: none; z-index: 2; }
+.ide-splitter[hidden] { display: none !important; }
+.ide-splitter::after { content: ""; position: absolute; inset: 0 2px; border-radius: 3px; background: var(--line); transition: background .12s; }
+.ide-splitter:is(:hover,:focus-visible,.dragging)::after { background: var(--accent); }
+.ide-splitter:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }
+.ide-splitter[data-axis="y"] { cursor: row-resize; }
+.ide-splitter[data-axis="y"]::after { inset: 2px 0; }
+body.repository-ide-enabled #repository-ide-host { grid-column: 1; grid-row: 1; min-width: 0; min-height: 0; height: 100%; overflow: hidden; }
+body.repository-ide-enabled #repository-workbench-resizer { grid-column: 2; grid-row: 1; cursor: col-resize; }
+/* Rail drawers belong to the workbench. A positioned/contained chat canvas
+   would anchor them at the editor/chat divider and clip them to the chat. */
+body.repository-ide-enabled #repository-workbench > .ai-canvas { position: static; container: none; overflow: visible; grid-column: 3; grid-row: 1; grid-template-columns: 0 0 minmax(0, 1fr) !important; grid-template-rows: minmax(0, 1fr); padding: 0; min-width: 0; min-height: 0; }
+body.repository-ide-enabled .ai-main-content { container: repository-chat chat-layout / size; min-height: 0; padding: 8px 12px; overflow: hidden auto; overscroll-behavior: contain; }
+/* Keep the conversation independently scrollable. In very short panes the
+   outer chat can also scroll, so the composer controls remain reachable. */
+body.repository-ide-enabled .ai-main-content > .chat-scroll-region { flex: 1 1 0; min-height: 64px; }
+body.repository-ide-enabled .ai-main-content > :is(.ai-sticky-header, .agent-tabs, .chat-composer) { flex-shrink: 0; }
+/* The canvas stays mounted because it also owns the full-height rail drawers. */
+body.repository-ide-enabled.repository-ide-chat-hidden #repository-workbench { grid-template-columns: minmax(0, 1fr) 0 0; }
+body.repository-ide-enabled.repository-ide-chat-hidden #repository-workbench-resizer,
+body.repository-ide-enabled.repository-ide-chat-hidden #repository-workbench > .ai-canvas > .ai-main-content { display: none; }
+/* On genuinely narrow windows, preserve the full editor beneath a right-hand
+   chat drawer. Its disclosure stays exposed in the repository header.
+   Do not position the canvas itself: its rail drawers still span the workbench. */
+body.repository-ide-enabled #repository-workbench[data-chat-layout="overlay"] { grid-template-columns: minmax(0, 1fr) 0 0; }
+body.repository-ide-enabled #repository-workbench[data-chat-layout="overlay"] > .ai-canvas > .ai-main-content { position: absolute; grid-area: auto; inset: 42px 0 0 auto; width: min(360px, calc(100% - var(--tools-rail-width))); height: auto; z-index: 4; border-left: 1px solid var(--line); background: var(--bg); box-shadow: -8px 0 24px #0003; }
+body.repository-ide-enabled .ai-canvas .chat-thread.is-empty { min-height: 0; padding: 10px 6px 60px; }
+body.repository-ide-enabled .ai-canvas .chat-empty-state { flex: 0 0 auto; justify-content: flex-start; }
+body.repository-ide-enabled .ai-canvas .chat-empty-state h1 { font-size: clamp(22px, 6cqi, 28px); line-height: 1.18; letter-spacing: -.035em; margin: 0 0 8px; overflow-wrap: anywhere; }
+body.repository-ide-enabled .ai-canvas .chat-empty-state .eyebrow { font-size: 9px; line-height: 1.3; margin: 0 0 6px; }
+body.repository-ide-enabled .ai-canvas .chat-empty-state > p:last-child { max-width: 44ch; font-size: 12px; line-height: 1.5; margin: 0; }
+body.repository-ide-enabled .ai-main-content:has(#agent-conversation.is-empty):has(#agent-output-card.hidden):has(#agent-question-card-host:empty) > .chat-navigation-slot { display: none; }
+/* Clear the normal dock's grid slot so the inset starts at the workbench's
+   padding edge, not the editor column which already follows the tools rail. */
+body.repository-ide-enabled #repository-workbench > .ai-canvas > .task-sidebar { position: absolute; grid-area: auto; inset: 0 auto 0 var(--tools-rail-width); height: 100%; max-width: calc(100% - var(--tools-rail-width)); margin: 0; box-shadow: 8px 0 24px #0003; }
+body.repository-ide-enabled #repository-workbench > .ai-canvas > .task-sidebar { width: var(--side-panel-width); z-index: 9; }
+body.repository-ide-enabled .ai-canvas.task-panel-collapsed > .task-sidebar { display: none; }
+body.repository-ide-enabled .ai-canvas > .task-sidebar-resizer { display: none; }
+#repository-task-history-close { display: none; }
+body.repository-ide-enabled #repository-task-history-close { display: inline-flex; align-items: center; justify-content: center; flex: none; }
+body.repository-ide-enabled .prompt-toolbar { gap: 5px; padding: 7px; }
+body.repository-ide-enabled .suggestion-row { gap: 4px; }
+@container repository-chat (max-height: 420px) {
+  body.repository-ide-enabled .ai-canvas .chat-thread.is-empty { padding-bottom: 12px; }
+  body.repository-ide-enabled .ai-canvas .chat-empty-state h1 { font-size: 22px; }
+  body.repository-ide-enabled .ai-canvas .chat-empty-state > p:last-child { font-size: 11px; line-height: 1.4; }
+  body.repository-ide-enabled .ai-main-content > .suggestion-row { margin-top: 4px; }
+  body.repository-ide-enabled .ai-main-content > .suggestion-row > button { padding: 4px 8px; font-size: 10px; }
+}
+/* The aggregate Code discussions task is a saved transcript. Its per-location
+   composers live beside code, so an unrelated draft is neither sent nor erased. */
+#repository-workbench.code-discussions-task .ai-canvas .prompt-card { display: none; }
+.code-discussions-task-notice { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 12px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--muted); }
+.code-discussions-task-notice p { flex: 1 1 220px; margin: 0; }
+.code-discussions-task-notice button { flex: none; }
+.code-discussion-message-anchor { margin-bottom: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); font-size: .85em; }
+.code-discussion-message-anchor summary { cursor: pointer; overflow-wrap: anywhere; }
+.code-discussion-message-anchor pre { max-height: 180px; overflow: auto; white-space: pre; color: var(--text); }

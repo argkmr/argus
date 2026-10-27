@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-font-family="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Edit and resend — isolated automatic-stop checks</title>
+  <link rel="stylesheet" href="/public/styles.css">
+  <link rel="stylesheet" href="/public/font-family.css">
+  <style>
+    body.fixture-page{display:block;overflow:auto;min-height:100vh;padding:28px;background:var(--bg,#0b1015)}
+    .fixture-shell{max-width:1040px;margin:auto}.fixture-shell h1{font-size:26px;margin:0 0 10px}.fixture-shell p{color:var(--muted,#aeb9c8)}
+    .fixture-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:18px 0}.fixture-controls label{display:flex;gap:8px;align-items:center}
+    .fixture-controls button,.fixture-controls select{padding:9px 13px;font:inherit;border:1px solid var(--border,#3f4c5c);border-radius:9px;background:var(--surface,#161e28);color:var(--text,#eef3f8)}
+    .fixture-controls button{cursor:pointer}.fixture-controls button:disabled{opacity:.5;cursor:wait}
+    .fixture-composer{width:100%;height:90px;padding:14px;border:1px solid var(--border,#3f4c5c);border-radius:12px;background:var(--surface,#161e28);color:var(--text,#eef3f8)}
+    .fixture-report,.fixture-log{padding:15px;border:1px solid var(--border,#3f4c5c);border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.55 ui-monospace,monospace;background:var(--surface,#161e28)}
+    .fixture-report{max-height:350px;overflow:auto}.fixture-log{min-height:130px;max-height:230px;overflow:auto}.fixture-label{display:block;margin:16px 0 8px;color:var(--muted,#aeb9c8)}
+    .fixture-status{display:inline-block;padding:6px 10px;border-radius:8px;background:#163c30;color:#8ee5bd}
+    @media(max-width:650px){body.fixture-page{padding:14px}.fixture-shell h1{font-size:22px}}
+  </style>
+</head>
+<body class="fixture-page">
+<main class="fixture-shell">
+  <h1>Edit &amp; resend automatically stops the current response</h1>
+  <p>Real production editor, stop coordinator, and stylesheet; synthetic chats and an in-memory API only. No application initialization, backend calls, model calls, profile storage, or real process stops.</p>
+  <div class="fixture-controls">
+    <button id="edit-repository" type="button">Edit repository request</button>
+    <button id="edit-global" type="button">Edit Nexus request</button>
+    <label>Scenario <select id="scenario"><option value="running">Running response</option><option value="preparation">Preparing request</option><option value="failure">Stop failure</option><option value="queued">Queued follow-up</option></select></label>
+    <label>Drain <select id="drain"><option value="350">Quick · 350 ms</option><option value="2000" selected>Visible · 2 seconds</option><option value="5000">Slow · 5 seconds</option></select></label>
+  </div>
+  <div class="fixture-controls">
+    <label>Appearance <select id="appearance"><option>dark</option><option>light</option></select></label>
+    <label>Font <select id="font"><option value="system">System</option><option value="comic-sans">Comic Sans</option></select></label>
+    <button id="run-checks" type="button">Run checks again</button>
+    <span id="runtime-status" class="fixture-status" role="status">Synthetic response running</span>
+  </div>
+  <label class="fixture-label" for="fixture-composer">Existing composer draft (must remain untouched)</label>
+  <textarea id="fixture-composer" class="fixture-composer">An unsent composer draft with separate attachments.</textarea>
+  <p class="fixture-label">In-memory events</p><pre id="events" class="fixture-log" aria-live="polite"></pre>
+  <p class="fixture-label">Automatic browser regression report</p><pre id="report" class="fixture-report" role="status">Loading production modules…</pre>
+</main>
+<script type="module">
+import { createPromptEditor } from '/public/prompt-editor.js';
+import { createPromptRevisionCoordinator } from '/public/prompt-revision-stop.mjs';
+
+const $ = (selector) => document.querySelector(selector);
+const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const originalDraft = $('#fixture-composer').value;
+const sourcePrompt = 'Explain how the request flows through the API and worker, then add the focused tests.';
+let environment, runningChecks = false;
+const timers = new Set();
+function later(callback, ms) { const timer = setTimeout(() => { timers.delete(timer); callback(); }, ms); timers.add(timer); }
+function event(kind, detail = {}) {
+  environment.events.push({ kind, ...detail });
+  $('#events').textContent = environment.events.map((entry) => JSON.stringify(entry)).join('\n');
+}
+function setup(scope, { scenario = 'running', drainMs = 2000 } = {}) {
+  timers.forEach(clearTimeout); timers.clear();
+  const repositoryId = scope === 'global' ? 'global' : 'fixture-repository';
+  const taskId = scope === 'global' ? 'fixture-nexus-chat' : 'fixture-repository-chat';
+  const task = { id: taskId, scope, repositoryId, provider: 'codex', messages: [{ id: 'user-request', role: 'user', content: sourcePrompt, attachments: [{ id: 'fixture-attachment', name: 'architecture-notes.md' }] }] };
+  environment = { scope, scenario, drainMs, task, events: [], mutations: 0, submissions: 0, progress: [], drainAt: 0, draining: false, queue: scenario === 'queued' ? [{ requestId: 'saved-follow-up', taskId }] : [] };
+  environment.jobs = [
+    ...(scenario === 'preparation' ? [] : [{ id: 'source-job', taskId, repositoryId, status: 'running', completionPending: false }]),
+    { id: 'unrelated-job', taskId: 'another-chat', repositoryId, status: 'running', completionPending: false },
+  ];
+  environment.submission = scenario === 'preparation' ? { requestId: 'source-preparation', taskId, repositoryId, cancelled: false } : null;
+  $('#runtime-status').textContent = scenario === 'preparation' ? 'Synthetic request preparing' : 'Synthetic response running';
+  $('#events').textContent = '';
+  return environment;
+}
+function startDrain() {
+  if (environment.draining) return;
+  environment.draining = true;
+  environment.drainAt = performance.now() + environment.drainMs;
+  const countdown = () => {
+    const remaining = Math.max(0, environment.drainAt - performance.now());
+    if (!remaining) return;
+    $('#runtime-status').textContent = `Cancellation accepted · draining ${(remaining / 1000).toFixed(1)} s…`;
+    later(countdown, Math.min(100, remaining));
+  };
+  countdown();
+  later(() => {
+    environment.jobs.filter((job) => job.taskId === environment.task.id).forEach((job) => { job.status = 'cancelled'; job.completionPending = false; });
+    environment.submission = null;
+    $('#runtime-status').textContent = 'Output drained and transcript saved';
+    event('drained');
+  }, environment.drainMs);
+}
+async function memoryApi(path, options = {}) {
+  const method = options.method || 'GET';
+  if (method === 'GET' && path.startsWith('/api/prompt-queue?')) return structuredClone(environment.queue);
+  if (method === 'GET' && path.startsWith('/api/agents/jobs?')) return structuredClone(environment.jobs);
+  if (method === 'DELETE' && path.startsWith('/api/agents/')) {
+    event('stop', { path, control: options.headers?.['X-Argus-Cancel-Control'] });
+    if (environment.scenario === 'failure') throw new Error('Simulated stop failure. Your edited request is still here.');
+    if (path === '/api/agents/preparations/source-preparation') {
+      startDrain();
+      return { ok: true, cancellation: { id: 'fixture-cancellation', preparationId: 'source-preparation' } };
+    }
+    if (path === '/api/agents/jobs/source-job') {
+      const job = environment.jobs.find((item) => item.id === 'source-job');
+      job.status = 'cancelled'; job.completionPending = true;
+      startDrain();
+      return { ok: true, job: structuredClone(job) };
+    }
+  }
+  throw new Error(`Fixture rejected unexpected API operation: ${method} ${path}`);
+}
+const coordinate = createPromptRevisionCoordinator({ api: memoryApi,
+  isCurrent: (scope, task) => scope === environment.scope && task.id === environment.task.id,
+  hasQueuedWork: () => environment.queue.length > 0,
+  getSubmission: () => environment.submission,
+  timeoutMs: 12000, pollMs: 45,
+});
+const editor = createPromptEditor({ document,
+  loadTask: async (id) => { if (id !== environment.task.id) throw new Error('Unknown synthetic task'); return structuredClone(environment.task); },
+  submit: async ({ scope, task, prompt, onProgress }) => {
+    environment.submissions++;
+    await coordinate({ scope, task,
+      onProgress: (label) => { environment.progress.push(label); onProgress(label); },
+      mutate: async () => {
+        if (environment.submission || environment.jobs.some((job) => job.taskId === task.id && (job.status !== 'cancelled' || job.completionPending))) throw new Error('Fixture caught revision before actual drain');
+        environment.mutations++;
+        event('revision', { scope, prompt });
+        $('#runtime-status').textContent = 'Edited request submitted in this chat · previous version kept';
+        return { task: { ...task, revisionCount: 1 } };
+      },
+    });
+  },
+});
+async function open(scope, options = {}) {
+  setup(scope, options);
+  await editor.open({ scope, taskId: environment.task.id, messageId: 'user-request', trigger: $(scope === 'global' ? '#edit-global' : '#edit-repository') });
+}
+const dialog = () => $('#prompt-edit-dialog');
+const field = () => dialog().querySelector('textarea');
+const save = () => dialog().querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+const cancel = () => dialog().querySelector('[data-cancel-edit]').click();
+async function until(predicate, label, timeout = 4000) {
+  const end = performance.now() + timeout;
+  while (!predicate()) { if (performance.now() >= end) throw new Error(`Timed out: ${label}`); await pause(15); }
+}
+function assert(condition, message) { if (!condition) throw new Error(message); }
+async function runChecks() {
+  if (runningChecks || dialog()?.open) return;
+  runningChecks = true; $('#run-checks').disabled = true;
+  const results = [];
+  async function check(name, callback) {
+    try { await callback(); results.push({ name, status: 'PASS' }); }
+    catch (error) { results.push({ name, status: 'FAIL', error: error.message }); if (dialog()?.open && dialog().getAttribute('aria-busy') !== 'true') cancel(); }
+    $('#report').textContent = JSON.stringify({ status: 'RUNNING', results }, null, 2);
+  }
+  try {
+    await check('Opening and cancelling Edit never stop a job', async () => {
+      await open('repository');
+      field().value = 'A cancelled edit'; cancel();
+      assert(!dialog().open && environment.events.length === 0 && environment.submissions === 0, 'Opening/cancelling caused work');
+      assert(document.activeElement === $('#edit-repository'), 'Cancel did not restore focus');
+    });
+    for (const scope of ['repository', 'global']) await check(`${scope}: stop, drain, scoped revision, duplicate guard`, async () => {
+      await open(scope, { drainMs: 300 });
+      field().value = `Edited ${scope} request`;
+      save();
+      await until(() => environment.progress.includes('Stopping current response…'), 'stop progress');
+      assert(dialog().open && dialog().getAttribute('aria-busy') === 'true', 'Busy modal was not retained');
+      assert(field().disabled && dialog().querySelector('[data-save-edit]').disabled && dialog().querySelector('[data-cancel-edit]').disabled, 'Busy controls were not disabled');
+      assert(dialog().querySelector('[data-edit-progress]').textContent === 'Stopping current response…', 'Stop progress was not visible');
+      assert(environment.mutations === 0, 'Fork occurred before drain');
+      save();
+      dialog().dispatchEvent(new Event('cancel', { cancelable: true }));
+      assert(dialog().open, 'Escape dismissed an in-flight edit');
+      await until(() => !dialog().open, 'successful revision');
+      const stops = environment.events.filter((item) => item.kind === 'stop');
+      assert(environment.submissions === 1 && environment.mutations === 1, 'Duplicate stop/revision submission');
+      assert(stops.length === 1 && stops[0].path === '/api/agents/jobs/source-job', 'Unexpected stop target');
+      assert(stops[0].control === `${scope}-prompt-edit`, 'Incorrect scope attribution');
+      assert(environment.jobs.find((job) => job.id === 'unrelated-job').status === 'running', 'Another chat was stopped');
+      assert(environment.events.findIndex((item) => item.kind === 'drained') < environment.events.findIndex((item) => item.kind === 'revision'), 'Revision preceded drain');
+      assert(environment.task.messages[0].content === sourcePrompt && $('#fixture-composer').value === originalDraft, 'Original conversation or composer draft changed');
+    });
+    await check('Preparing request cancellation waits for submission cleanup', async () => {
+      await open('global', { scenario: 'preparation', drainMs: 200 });
+      save(); await until(() => environment.progress.includes('Stopping current response…'), 'preparation stop');
+      assert(environment.mutations === 0 && environment.submission, 'Revision preceded preparation cleanup');
+      await until(() => !dialog().open, 'preparation revision');
+      assert(environment.events.filter((item) => item.kind === 'stop').every((item) => item.path === '/api/agents/preparations/source-preparation' && item.control === 'global-prompt-edit'), 'Preparation cancellation escaped its captured ID');
+      assert(environment.mutations === 1, 'Preparation did not produce exactly one revision');
+    });
+    await check('Stop failure keeps edited text and composer draft available', async () => {
+      await open('repository', { scenario: 'failure' }); field().value = 'Keep this unsaved edited request';
+      save(); await until(() => dialog().querySelector('[data-edit-error]').textContent.includes('Simulated stop failure'), 'failure state');
+      assert(dialog().open && field().value === 'Keep this unsaved edited request' && !field().disabled, 'Failure lost or locked edited text');
+      assert(environment.mutations === 0 && $('#fixture-composer').value === originalDraft, 'Failure mutated chat or composer');
+      cancel();
+    });
+    await check('Queued follow-up blocks revision without stopping existing response', async () => {
+      await open('global', { scenario: 'queued' }); save();
+      await until(() => dialog().querySelector('[data-edit-error]').textContent.includes('queued prompts'), 'queue guard');
+      assert(environment.events.length === 0 && environment.queue.length === 1 && environment.mutations === 0, 'Queue guard stopped or consumed work');
+      cancel();
+    });
+    await check('Edit dialog respects Comic Sans and light appearance', async () => {
+      document.documentElement.dataset.fontFamily = 'comic-sans';
+      document.documentElement.dataset.theme = 'light';
+      await open('global', { scenario: 'running' });
+      assert(getComputedStyle(field()).fontFamily.includes('Comic Sans'), 'Modal did not inherit chosen font');
+      assert(getComputedStyle(dialog()).color !== 'rgb(242, 244, 247)', 'Modal did not use light appearance');
+      cancel();
+      document.documentElement.dataset.fontFamily = $('#font').value;
+      document.documentElement.dataset.theme = $('#appearance').value;
+    });
+  } finally {
+    runningChecks = false; $('#run-checks').disabled = false;
+    const report = { status: results.some((item) => item.status === 'FAIL') ? 'FAIL' : 'PASS', checks: results.length, results };
+    $('#report').textContent = JSON.stringify(report, null, 2);
+    document.documentElement.dataset.checks = report.status;
+    window.promptRevisionFixtureReport = report;
+    if (!dialog()?.open) setup('repository');
+  }
+}
+for (const scope of ['repository', 'global']) $('#edit-' + scope).addEventListener('click', () => {
+  if (!runningChecks && !dialog()?.open) open(scope, { scenario: $('#scenario').value, drainMs: Number($('#drain').value) });
+});
+$('#run-checks').addEventListener('click', runChecks);
+$('#appearance').addEventListener('change', () => document.documentElement.dataset.theme = $('#appearance').value);
+$('#font').addEventListener('change', () => document.documentElement.dataset.fontFamily = $('#font').value);
+window.promptRevisionFixture = { open, runChecks, get environment() { return environment; } };
+setup('repository');
+await runChecks();
+</script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+[
+  {
+    "id": "codex",
+    "name": "Codex",
+    "executable": "codex",
+    "versionArguments": [
+      "--version"
+    ],
+    "authenticationArguments": [
+      "login",
+      "status"
+    ],
+    "authenticationSuccessPattern": "(?i)Logged in using\\s+(.+)",
+    "authenticationMethodPattern": "(?i)Logged in using\\s+(.+)",
+    "capabilityArguments": [
+      "exec",
+      "--ephemeral",
+      "--ignore-user-config",
+      "--ignore-rules",
+      "--sandbox",
+      "read-only",
+      "--skip-git-repo-check",
+      "--json",
+      "--model",
+      "gpt-5.6-luna",
+      "--config",
+      "model_reasoning_effort=\"low\"",
+      "Reply with exactly ARGUS_READY. Do not use tools."
+    ],
+    "capabilitySuccessPattern": "ARGUS_READY",
+    "runArguments": [
+      "exec",
+      "--json",
+      "--color",
+      "never",
+      "--sandbox",
+      "{sandbox}",
+      "{modelArguments}",
+      "{effortArguments}",
+      "{speedArguments}",
+      "-C",
+      "{workingDirectory}",
+      "{directories}",
+      "{prompt}"
+    ],
+    "resumeArguments": [
+      "exec",
+      "--json",
+      "--color",
+      "never",
+      "--sandbox",
+      "{sandbox}",
+      "{modelArguments}",
+      "{effortArguments}",
+      "{speedArguments}",
+      "resume",
+      "--skip-git-repo-check",
+      "{sessionId}",
+      "{prompt}"
+    ],
+    "conversationArguments": [
+      "exec",
+      "--ephemeral",
+      "--ignore-user-config",
+      "--ignore-rules",
+      "--skip-git-repo-check",
+      "--json",
+      "--color",
+      "never",
+      "--sandbox",
+      "read-only",
+      "{modelArguments}",
+      "{effortArguments}",
+      "{speedArguments}",
+      "{prompt}"
+    ],
+    "conversationDefaultModel": "gpt-5.6-luna",
+    "conversationDefaultEffort": "low",
+    "modelArguments": [
+      "--model",
+      "{model}"
+    ],
+    "effortArguments": [
+      "--config",
+      "model_reasoning_effort=\"{effort}\""
+    ],
+    "fastArguments": [
+      "--config",
+      "service_tier=\"fast\"",
+      "--config",
+      "features.fast_mode=true"
+    ],
+    "directoryArguments": [
+      "--add-dir",
+      "{path}"
+    ],
+    "promptViaStdin": false,
+    "models": [
+      "gpt-5.6-sol",
+      "gpt-5.6-terra",
+      "gpt-5.6-luna"
+    ],
+    "defaultModel": "gpt-5.6-sol",
+    "builtin": true,
+    "toolCapable": true,
+    "contextCapabilities": [
+      "image",
+      "browser",
+      "file"
+    ],
+    "createdAt": "",
+    "updatedAt": ""
+  },
+  {
+    "id": "claude",
+    "name": "Claude Code",
+    "executable": "claude",
+    "versionArguments": [
+      "--version"
+    ],
+    "authenticationArguments": [
+      "auth",
+      "status"
+    ],
+    "authenticationSuccessPattern": "\\\"loggedIn\\\"\\s*:\\s*true",
+    "authenticationMethodPattern": "\\\"authMethod\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"",
+    "capabilityArguments": [
+      "--print",
+      "--output-format",
+      "json",
+      "--no-session-persistence",
+      "--permission-mode",
+      "plan",
+      "--safe-mode",
+      "Reply with exactly ARGUS_READY. Do not use tools."
+    ],
+    "capabilitySuccessPattern": "ARGUS_READY",
+    "runArguments": [
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--permission-mode",
+      "{permissionMode}",
+      "{modelArguments}",
+      "{effortArguments}",
+      "{speedArguments}",
+      "{directories}",
+      "--",
+      "{prompt}"
+    ],
+    "resumeArguments": [
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--permission-mode",
+      "{permissionMode}",
+      "--resume",
+      "{sessionId}",
+      "{modelArguments}",
+      "{effortArguments}",
+      "{speedArguments}",
+      "{directories}",
+      "--",
+      "{prompt}"
+    ],
+    "conversationArguments": [
+      "--print",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--no-session-persistence",
+      "--permission-mode",
+      "plan",
+      "--safe-mode",
+      "{modelArguments}",
+      "{effortArguments}",
+      "{speedArguments}",
+      "{prompt}"
+    ],
+    "conversationDefaultModel": "haiku",
+    "conversationDefaultEffort": "low",
+    "modelArguments": [
+      "--model",
+      "{model}"
+    ],
+    "effortArguments": [
+      "--effort",
+      "{effort}"
+    ],
+    "fastArguments": [
+      "--settings",
+      "{\"fastMode\":true}"
+    ],
+    "directoryArguments": [
+      "--add-dir",
+      "{path}"
+    ],
+    "promptViaStdin": true,
+    "models": [
+      "opus",
+      "sonnet",
+      "haiku"
+    ],
+    "defaultModel": "sonnet",
+    "builtin": true,
+    "toolCapable": true,
+    "contextCapabilities": [
+      "image",
+      "browser",
+      "file"
+    ],
+    "createdAt": "",
+    "updatedAt": ""
+  }
+]

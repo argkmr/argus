@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-font-family="system">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Argus question reply cards — isolated browser checks</title>
+<link rel="stylesheet" href="/public/styles.css"><link rel="stylesheet" href="/public/agent-question-cards.css"><link rel="stylesheet" href="/public/font-family.css">
+<style>
+body.fixture{height:auto;min-height:100vh;overflow:auto;padding:24px}.fixture-shell{max-width:1100px;margin:auto}.fixture h1{font-size:25px;margin:0 0 8px}.fixture-intro{font-size:13px;line-height:1.6;color:var(--muted)}
+.fixture-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0}.fixture-controls label{display:flex;gap:7px;align-items:center;font-size:12px}.fixture-controls button,.fixture-controls select{padding:8px 10px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;font:inherit;font-size:12px}
+.fixture-chat{padding:20px;border:1px solid var(--line);border-radius:15px;background:var(--bg)}.fixture-message{margin:0 0 14px;line-height:1.6;font-size:14px}.fixture-meta{color:var(--muted);font-size:12px;margin-bottom:8px}.fixture-composer{display:block;width:100%;min-height:78px;padding:12px;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.fixture-log{font:12px/1.55 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid var(--line);border-radius:10px;padding:12px;max-height:300px;overflow:auto}.fixture-test-host{position:fixed;left:-15000px;top:0;width:900px} @media(max-width:650px){body.fixture{padding:12px}.fixture-chat{padding:12px}}
+</style></head>
+<body class="fixture"><main class="fixture-shell">
+<h1>Question from Argus</h1><p class="fixture-intro">Production question reply/cancellation cards with synthetic repository/Nexus chats. No backend calls, agent invocation, application initialization, profile writes, or real queue dispatch.</p>
+<div class="fixture-controls">
+<label>Chat <select id="scope"><option value="repository">Repository</option><option value="global">Nexus</option></select></label>
+<label>Question <select id="source"><option value="structured">Explicit question</option><option value="suggested">Legacy prose suggestion</option></select></label>
+<label>State <select id="lifecycle"><option value="completed">Response finished</option><option value="running">Still working</option><option value="finalizing">Finalizing response</option></select></label>
+<label>Appearance <select id="appearance"><option>dark</option><option>light</option></select></label>
+<label>Font <select id="font"><option value="system">System</option><option value="comic-sans">Comic Sans</option></select></label>
+<label><input id="fail" type="checkbox"> Simulate request failure</label>
+<button id="reset" type="button">New question</button><button id="poll" type="button">Simulate polling</button><button id="switch" type="button">Switch away / back</button><button id="checks" type="button">Run checks</button>
+</div>
+<section id="preview" class="fixture-chat"><div class="fixture-meta">Argus · synthetic response</div><p class="fixture-message">We can keep replay payloads separate from the notification text. I need the destination and access details before continuing.</p><div id="question-host" class="agent-question-host"></div><textarea id="composer" class="fixture-composer">Unsent composer draft — this must stay untouched.</textarea></section>
+<p class="fixture-intro">In-memory events</p><pre id="events" class="fixture-log">No request sent.</pre>
+<p class="fixture-intro">Automatic browser checks</p><pre id="report" class="fixture-log" role="status">Loading…</pre>
+<div id="tests" class="fixture-test-host"></div>
+</main>
+<script type="module">
+import { createAgentQuestionCards, chatQuestion } from '/public/agent-question-cards.mjs';
+const $ = (selector) => document.querySelector(selector), pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+let sequence = 0, preview, away = false, checking = false;
+const q = (id, source = 'structured') => ({ id, source, questions: [
+  { id: 'destination', header: 'Replay storage', question: 'Which existing private bucket and prefix can we use for the complete replay payload?', options: [{ label: 'Use an existing private bucket', description: 'Describe the approved bucket and prefix in your answer.' }, { label: 'Storage is not configured yet', description: 'Keep this work paused while the destination is confirmed.' }] },
+  { id: 'access', question: 'Do these services already have access to that bucket?', options: [] },
+] });
+function create({ host, scope = 'repository', source = 'structured', active = false, failures = 0, delay = 100 } = {}) {
+  const id = `fixture-task-${++sequence}`, question = q(`fixture-job-${sequence}:question`, source);
+  const saved = { role: 'assistant', status: 'completed', question, createdAt: '2026-09-10T12:00:02Z', execution: { jobId: `fixture-job-${sequence}` } };
+  const task = { id, messages: [saved] };
+  const job = { id: `fixture-job-${sequence}`, taskId: id, startedAt: '2026-09-10T12:00:01Z', question, status: active ? 'running' : 'completed', completionPending: false };
+  const state = { id, scope, task, job, calls: [], current: true, errors: failures, accepted: 0, cancelled: 0, host };
+  const cards = createAgentQuestionCards({ document,
+    api: async (path, options) => {
+      state.calls.push({ path, body: options.body });
+      if (state === preview) $('#events').textContent = state.calls.map((call) => JSON.stringify(call)).join('\n');
+      await pause(delay);
+      if (state.errors > 0) { state.errors--; throw new Error('Synthetic network failure. Your answers are kept; retry uses the same request ID.'); }
+      if (path.endsWith('/cancel')) {
+        task.questionCancellation = { status: 'cancelled', requestId: options.body.requestId, questionId: options.body.questionId, cancelledAt: '2026-09-10T12:00:04Z' };
+        job.status = 'cancelled'; job.completionPending = false;
+        return { ok: true, task, job };
+      }
+      return { id: `continuation-${id}`, taskId: id };
+    },
+    isCurrent: (value, taskId) => state.current && scope === value && taskId === id,
+    onAnswered: async (_, receipt) => {
+      state.accepted++;
+      task.messages.push({ role: 'user', createdAt: '2026-09-10T12:00:03Z', questionReply: { questionId: receipt.questionId } });
+      state.render();
+    },
+    onCancelled: async (_, receipt) => {
+      state.cancelled++;
+      assert(receipt.taskId === id && receipt.questionId === question.id, 'Cancellation callback targeted a different question');
+      state.render();
+    },
+  });
+  state.render = () => cards.render(host, { scope, taskId: id, detail: chatQuestion(task, job) });
+  state.hide = () => cards.render(host, { scope, taskId: null, detail: null });
+  state.render(); return state;
+}
+function reset() {
+  if (checking || preview?.host.querySelector('[aria-busy="true"]')) return;
+  away = false;
+  preview = create({ host: $('#question-host'), scope: $('#scope').value, source: $('#source').value, active: $('#lifecycle').value !== 'completed' });
+  $('#events').textContent = 'No request sent.'; lifecycle();
+}
+function lifecycle() {
+  if (!preview) return;
+  preview.job.status = $('#lifecycle').value === 'running' ? 'running' : 'completed';
+  preview.job.completionPending = $('#lifecycle').value === 'finalizing';
+  preview.errors = $('#fail').checked ? 1 : 0;
+  if (!away) preview.render();
+}
+function submit(state) { state.host.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); }
+function cancel(state) { state.host.querySelector('.agent-question-cancel').click(); }
+function fill(state) { state.host.querySelectorAll('textarea').forEach((field, index) => { field.value = index ? 'Access is configured for the service role.' : 'private-fixture-bucket/replays'; field.dispatchEvent(new Event('input')); }); }
+async function until(predicate, label) { const end = performance.now() + 4000; while (!predicate()) { if (performance.now() > end) throw new Error(`Timed out: ${label}`); await pause(15); } }
+function assert(condition, label) { if (!condition) throw new Error(label); }
+async function runChecks() {
+  if (checking) return; checking = true; $('#checks').disabled = true;
+  const results = [];
+  const run = async (name, options, action) => {
+    const host = document.createElement('div'); host.className = 'agent-question-host'; $('#tests').append(host);
+    const state = create({ host, ...options });
+    try { await action(state); results.push({ name, status: 'PASS' }); }
+    catch (error) { results.push({ name, status: 'FAIL', error: error.message }); }
+    host.remove(); $('#report').textContent = JSON.stringify({ status: 'RUNNING', results }, null, 2);
+  };
+  try {
+    await run('Nothing is preselected and empty answers never dispatch', {}, async (state) => {
+      assert([...state.host.querySelectorAll('input')].every((input) => !input.checked), 'A choice was preselected');
+      submit(state); await pause(20); assert(state.calls.length === 0, 'Empty reply was sent');
+      assert(state.host.querySelector('[role="alert"]').textContent.includes('each question'), 'Missing validation feedback');
+    });
+    await run('Real DOM and caret survive polls and chat switches', {}, async (state) => {
+      fill(state); const text = state.host.querySelector('textarea'), form = state.host.querySelector('form');
+      text.focus(); text.setSelectionRange(4, 9); state.render();
+      assert(state.host.querySelector('form') === form && document.activeElement === text && text.selectionStart === 4 && text.selectionEnd === 9, 'Polling replaced focus/caret');
+      state.hide(); state.render(); assert(state.host.querySelector('textarea') === text && text.value === 'private-fixture-bucket/replays', 'Chat switch lost draft');
+    });
+    await run('Working/finalizing lifecycle allows drafting but prevents submit', { active: true }, async (state) => {
+      fill(state); submit(state); await pause(20);
+      assert(!state.host.querySelector('textarea').disabled && state.host.querySelector('[type="submit"]').disabled && state.calls.length === 0, 'Active response accepted answer or blocked draft');
+      assert(state.host.querySelector('h3').textContent === 'Question from Argus', 'Misleading active status');
+      state.job.status = 'completed'; state.job.completionPending = true; state.render(); assert(state.host.querySelector('[type="submit"]').disabled, 'Finalization did not block send');
+      state.job.completionPending = false; state.render(); assert(!state.host.querySelector('[type="submit"]').disabled, 'Finished response did not enable answer');
+    });
+    for (const scope of ['repository', 'global']) await run(`${scope} exact reply, duplicate guard, no stale card`, { scope }, async (state) => {
+      fill(state); const form = state.host.querySelector('form'); submit(state); submit(state);
+      assert(state.calls.length === 1 && state.host.querySelector('textarea').disabled, 'Double send was accepted');
+      await until(() => state.accepted === 1, 'reply acceptance');
+      assert(state.calls[0].body.taskId === state.id && state.calls[0].body.questionId === state.job.question.id && state.calls[0].body.answers.length === 2, 'Wrong captured reply');
+      state.render(); assert(!state.host.children.length, 'Accepted question reappeared');
+      form.dispatchEvent(new Event('submit', { cancelable: true })); assert(state.calls.length === 1, 'Detached accepted form submitted again');
+    });
+    await run('Failure preserves text and unchanged retry request ID', { failures: 1 }, async (state) => {
+      fill(state); submit(state); await until(() => state.host.querySelector('[role="alert"]').textContent.includes('Synthetic network'), 'failure');
+      assert(state.host.querySelector('textarea').value === 'private-fixture-bucket/replays', 'Failure lost text');
+      submit(state); await until(() => state.accepted === 1, 'retry'); assert(state.calls[0].body.requestId === state.calls[1].body.requestId, 'Retry changed idempotency ID');
+    });
+    await run('Suggested prose is optional, never described as blocked', { source: 'suggested' }, async (state) => {
+      assert(state.host.querySelector('h3').textContent === 'Reply to this question', 'Suggestion claimed required reply');
+      assert(state.host.querySelector('[role="status"]').textContent.includes('not marked as blocked'), 'Suggestion status is unclear');
+    });
+    await run('Wrong visible chat cannot submit captured answers', {}, async (state) => {
+      fill(state); state.current = false; submit(state); await pause(20);
+      assert(state.calls.length === 0 && state.host.querySelector('[role="alert"]').textContent.includes('original chat'), 'Stale card submitted');
+    });
+    for (const scope of ['repository', 'global']) await run(`${scope} cancels with no answer and cannot revive after reload`, { scope }, async (state) => {
+      const button = state.host.querySelector('.agent-question-cancel'); cancel(state); button.click();
+      assert(state.calls.length === 1 && button.disabled && button.textContent === 'Cancelling…', 'Cancellation race was not guarded');
+      await until(() => state.cancelled === 1, 'cancellation');
+      assert(state.calls[0].path === '/api/agents/questions/cancel' && state.calls[0].body.taskId === state.id && state.calls[0].body.questionId === state.job.question.id && !('answers' in state.calls[0].body), 'Cancellation was converted to an answer or wrong chat');
+      assert(state.accepted === 0 && state.host.children.length === 0, 'Cancellation did not remove the pending question');
+      const reloadedTask = JSON.parse(JSON.stringify(state.task)), staleJob = { ...state.job, status: 'running', completionPending: true };
+      const reloadedCards = createAgentQuestionCards({ document, api: async () => { throw new Error('Reload must not dispatch'); }, isCurrent: () => true });
+      reloadedCards.render(state.host, { scope, taskId: state.id, detail: chatQuestion(reloadedTask, staleJob) });
+      assert(state.host.children.length === 0, 'Persisted cancellation revived a stale-live question after reload');
+      button.click(); assert(state.calls.length === 1, 'Detached cancellation button resubmitted');
+    });
+    await run('Cancellation remains available during finalization and waits for acknowledgement', { active: true }, async (state) => {
+      state.job.status = 'completed'; state.job.completionPending = true; state.render();
+      const button = state.host.querySelector('.agent-question-cancel');
+      assert(!button.disabled && state.host.querySelector('[type="submit"]').disabled, 'Finalizing response cannot be cancelled');
+      cancel(state); submit(state);
+      assert(state.cancelled === 0 && state.calls.length === 1 && state.host.querySelector('[role="status"]').textContent.includes('Cancelling'), 'Claimed cancellation before backend acknowledgement');
+      await until(() => state.cancelled === 1, 'finalizing cancellation');
+    });
+    await run('Cancellation failure preserves drafts and cancellation retry ID', { failures: 1 }, async (state) => {
+      fill(state); cancel(state); await until(() => state.host.querySelector('[role="alert"]').textContent.includes('Synthetic network'), 'cancellation failure');
+      assert(state.host.querySelector('textarea').value === 'private-fixture-bucket/replays' && !state.host.querySelector('.agent-question-cancel').disabled, 'Failed cancellation lost draft or disabled retry');
+      state.host.querySelector('textarea').value = 'Updated draft'; cancel(state);
+      await until(() => state.cancelled === 1, 'cancellation retry');
+      assert(state.calls[0].body.requestId === state.calls[1].body.requestId, 'Cancellation retry changed identity');
+    });
+    await run('Wrong chat and an in-flight answer both prevent cancellation', {}, async (state) => {
+      state.current = false; cancel(state); await pause(20);
+      assert(state.calls.length === 0 && state.host.querySelector('[role="alert"]').textContent.includes('original chat'), 'Stale chat cancellation was dispatched');
+      state.current = true; fill(state); submit(state); cancel(state);
+      assert(state.calls.length === 1 && state.calls[0].path.endsWith('/answer'), 'Cancellation raced the answer');
+      await until(() => state.accepted === 1, 'answer');
+    });
+    const original = $('#composer').value;
+    assert(original === 'Unsent composer draft — this must stay untouched.', 'Composer was modified');
+  } finally {
+    const report = { status: results.some((result) => result.status === 'FAIL') ? 'FAIL' : 'PASS', checks: results.length, results };
+    $('#report').textContent = JSON.stringify(report, null, 2); document.documentElement.dataset.checks = report.status;
+    window.agentQuestionFixtureReport = report; checking = false; $('#checks').disabled = false;
+  }
+}
+$('#reset').addEventListener('click', reset); $('#scope').addEventListener('change', reset); $('#source').addEventListener('change', reset);
+$('#lifecycle').addEventListener('change', lifecycle); $('#fail').addEventListener('change', lifecycle);
+$('#poll').addEventListener('click', () => { if (!away) preview.render(); });
+$('#switch').addEventListener('click', () => { away = !away; preview.current = !away; if (away) preview.hide(); else preview.render(); });
+$('#appearance').addEventListener('change', () => document.documentElement.dataset.theme = $('#appearance').value);
+$('#font').addEventListener('change', () => document.documentElement.dataset.fontFamily = $('#font').value);
+$('#checks').addEventListener('click', runChecks); reset(); await runChecks();
+window.agentQuestionFixture = { runChecks, get preview() { return preview; } };
+</script></body></html>

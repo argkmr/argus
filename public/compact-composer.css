@@ -1,0 +1,246 @@
+/* One quiet input and one action row. Controls remain in native, top-layer
+   disclosures so a short IDE chat never clips settings or attachment menus. */
+:is(#global-codex-panel, .ai-main-content) .chat-composer.compact-composer {
+  min-width: 0;
+  min-height: 0;
+  margin-top: 8px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--bg) 18%, transparent);
+}
+:is(#global-codex-panel, .ai-main-content) .chat-composer.compact-composer:focus-within { border-color: color-mix(in srgb, var(--accent) 48%, var(--line)); }
+:is(#global-codex-panel, .ai-main-content) .chat-composer.compact-composer > textarea {
+  display: block;
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+  max-height: 112px;
+  margin: 0;
+  padding: 10px 12px 7px;
+  border: 0;
+  border-radius: 12px 12px 0 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.55;
+  resize: none;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+:is(#global-codex-panel, .ai-main-content) .chat-composer.compact-composer > textarea::placeholder { color: var(--muted-2); }
+:is(#global-codex-panel, .ai-main-content) .chat-composer.compact-composer > .composer-toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  width: 100%;
+  height: 46px;
+  min-height: 46px;
+  padding: 6px 8px 7px;
+  border-top: 1px solid var(--line-soft);
+}
+.compact-composer .composer-menu { position: relative; min-width: 0; height: 32px; }
+.compact-composer .composer-context-menu { flex: 0 0 auto; }
+.compact-composer .composer-model-menu { flex: 0 1 auto; max-width: 320px; }
+:is(#global-codex-panel, .ai-main-content) .compact-composer .composer-menu > summary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  list-style: none;
+  cursor: pointer;
+}
+.compact-composer .composer-menu > summary::-webkit-details-marker { display: none; }
+:is(#global-codex-panel, .ai-main-content) .compact-composer .composer-menu > summary:hover, :is(#global-codex-panel, .ai-main-content) .compact-composer .composer-menu[open] > summary { color: var(--text); border-color: var(--line); background: var(--surface-2); }
+.compact-composer .composer-context-icon { display: block; flex: 0 0 16px; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.compact-composer .composer-context-label { line-height: 16px; }
+.compact-composer [data-composer-context-count] { display: inline-grid; place-items: center; flex: none; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 5px; color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); font-size: 10px; font-weight: 650; }
+.compact-composer .composer-model-menu [data-composer-model-label] { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: var(--text); }
+.compact-composer .composer-model-menu [id$="-config-summary"] { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 10px; color: var(--muted-2); }
+.compact-composer .composer-model-menu > summary > .disclosure-chevron { margin-left: auto; }
+.compact-composer .composer-model-menu[open] > summary > .disclosure-chevron { transform: rotate(180deg); }
+:is(#global-codex-panel, .ai-main-content) .compact-composer > .composer-toolbar > .composer-action-button { flex: 0 0 32px; width: 32px; min-width: 32px; height: 32px; min-height: 32px; margin-left: auto; padding: 0; }
+:is(#global-codex-panel, .ai-main-content) .compact-composer > .composer-toolbar > .queue-prompt-button { flex: 0 0 auto; height: 32px; min-height: 32px; margin-left: auto; padding: 0 9px; font-size: 10px; }
+:is(#global-codex-panel, .ai-main-content) .compact-composer > .composer-toolbar > .queue-prompt-button:not(.hidden) + .composer-action-button { margin-left: 0; }
+
+/* One theme-aware action in repository chat, the IDE dock and Nexus. State
+   classes still belong to the existing send/stop controller. */
+:is(#global-codex-panel, .ai-main-content) .compact-composer > .composer-toolbar > .composer-action-button {
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--accent) 13%, var(--surface));
+  color: var(--accent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 9%, transparent);
+  opacity: 1;
+  transform: none;
+  transition: background-color .14s ease, border-color .14s ease, box-shadow .14s ease;
+}
+:is(#global-codex-panel, .ai-main-content) .compact-composer > .composer-toolbar > .composer-action-button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 76%, var(--line));
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  color: var(--accent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 13%, transparent);
+  transform: none;
+}
+:is(#global-codex-panel, .ai-main-content) .compact-composer > .composer-toolbar > .composer-action-button:active:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 21%, var(--surface));
+  box-shadow: none;
+}
+:is(#global-codex-panel, .ai-main-content) .compact-composer > .composer-toolbar > .composer-action-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+:is(#global-codex-panel, .ai-main-content) .compact-composer > .composer-toolbar > .composer-action-button:disabled {
+  border-color: var(--line-soft);
+  background: var(--surface-2);
+  color: var(--muted-2);
+  box-shadow: none;
+  opacity: .65;
+  cursor: not-allowed;
+}
+:is(#global-codex-panel, .ai-main-content) .compact-composer .composer-action-button .composer-send-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: none;
+  pointer-events: none;
+}
+:is(#global-codex-panel, .ai-main-content) .compact-composer .composer-action-button:is(.is-running, .is-preparing) .composer-send-icon { display: none; }
+:is(#global-codex-panel, .ai-main-content) .compact-composer .composer-action-button .composer-stop-icon { width: 9px; height: 9px; background: currentColor; box-shadow: none; pointer-events: none; }
+:is(#global-codex-panel, .ai-main-content) .compact-composer .composer-action-button:is(.is-running, .is-preparing)::before { inset: 5px; border-width: 1.5px; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  :is(#global-codex-panel, .ai-main-content) .compact-composer > .composer-toolbar > .composer-action-button { transition: none; }
+}
+
+/* The collapsed toolbar never contains the popover's layout. Explicitly keep
+   closed native popovers hidden despite the legacy model menu's display rule. */
+.compact-composer .composer-popover[popover]:not(:popover-open) { display: none; }
+:is(#global-codex-panel, .ai-main-content) .compact-composer .composer-popover {
+  position: fixed;
+  inset: auto;
+  width: 360px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 12px 36px color-mix(in srgb, var(--bg) 52%, transparent);
+  font-size: 12px;
+  line-height: 1.45;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.compact-composer .composer-popover[popover]:popover-open { display: grid; gap: 12px; }
+.compact-composer .composer-popover::backdrop { background: transparent; }
+:is(#global-codex-panel, .ai-main-content) .compact-composer .composer-popover > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; min-height: 32px; padding: 0 0 9px; border-bottom: 1px solid var(--line-soft); }
+.compact-composer .composer-popover > header > div { min-width: 0; }
+/* The first title row shares the close control's centre, including when the
+   model menu has explanatory lines below it or the UI uses handwriting. */
+.compact-composer .composer-popover > header strong { display: flex; align-items: center; min-height: 32px; padding: 0; font-size: 12px; font-weight: 650; color: var(--text); }
+.compact-composer .composer-popover > header small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.45; overflow-wrap: anywhere; }
+.compact-composer .composer-popover [data-composer-menu-close] { display: grid; place-items: center; flex: none; width: 32px; height: 32px; padding: 0; border-color: transparent; border-radius: 6px; background: transparent; color: var(--muted); font-size: 18px; line-height: 1; }
+.compact-composer .composer-popover [data-composer-menu-close]:hover { color: var(--text); background: var(--surface-2); }
+.compact-composer .composer-popover .model-catalog-actions { display: flex; align-items: center; flex: none; gap: 2px; }
+.compact-composer .composer-popover [data-refresh-model-catalog] { display: grid; place-items: center; flex: none; width: 30px; height: 32px; min-height: 0; padding: 0; border-color: transparent; border-radius: 6px; background: transparent; color: var(--muted); }
+.compact-composer .composer-popover [data-refresh-model-catalog]:hover:not(:disabled) { color: var(--text); background: var(--surface-2); }
+.compact-composer .composer-popover [data-refresh-model-catalog] svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.compact-composer .composer-popover .model-catalog-identity { margin-top: -7px; color: var(--muted); font-size: 10px; overflow-wrap: anywhere; }
+.compact-composer .composer-popover .model-catalog-identity[hidden] { display: none; }
+:is(#global-codex-panel, .ai-main-content) .compact-composer .composer-popover > label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 5px;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+:is(#global-codex-panel, .ai-main-content) .compact-composer .composer-popover > label > span { display: block; color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: normal; text-transform: none; }
+:is(#global-codex-panel, .ai-main-content) .compact-composer .composer-popover select {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 34px 0 9px;
+  padding-right: 34px !important;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--text);
+  background-color: var(--surface-2);
+  background-position: right 10px center;
+  font-size: 11px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+}
+.compact-composer .composer-popover > :is(small, p) { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; overflow-wrap: anywhere; }
+.compact-composer .composer-attachment-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+:is(#global-codex-panel, .ai-main-content) .compact-composer .composer-attachment-actions > button { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-width: 0; height: 32px; min-height: 32px; margin: 0; padding: 0 8px; border: 1px solid var(--line); border-radius: 7px; color: var(--text); background: var(--surface-2); font-size: 11px; }
+.compact-composer .composer-popover .task-notes-bar { padding: 0; gap: 7px; }
+.compact-composer .composer-popover .task-notes-bar > small { font-size: 10px; }
+.compact-composer .composer-popover :is(.task-notes-open, .task-notes-toggle) { min-height: 32px; font-size: 11px; }
+.compact-composer .composer-popover .task-notes-open > span { font-size: 9px; }
+.compact-composer .composer-popover #nexus-repository-picker-root:empty { display: none; }
+.compact-composer .composer-popover #nexus-repository-picker-root > section { display: block; min-height: 0; padding: 12px 0 0; border-top: 1px solid var(--line-soft); }
+.compact-composer .composer-popover #nexus-repository-picker-root > section > details { width: 100%; }
+.compact-composer .composer-popover #nexus-repository-picker-root > section > details > summary { display: flex; width: 100%; min-height: 32px; font-size: 11px; }
+/* Repository selection expands inside Context, never beyond its scrollable
+   native popover. This retains every checkbox even in a shallow IDE pane. */
+.compact-composer .composer-popover #nexus-repository-picker-root > section > details > div { position: static; width: 100%; max-width: 100%; margin-top: 8px; padding: 9px; border-radius: 8px; box-shadow: none; }
+.compact-composer .composer-popover #nexus-repository-picker-root label { min-width: 0; }
+.compact-composer .composer-popover #nexus-repository-picker-root label strong { font-size: 11px; }
+.compact-composer .composer-popover #nexus-repository-picker-root header small { font-size: 10px; }
+
+/* Attached items occupy one bounded, independently scrollable line. */
+:is(#global-codex-panel, .ai-main-content) .compact-composer > .context-tray.has-context { min-height: 0; max-height: none; padding: 8px 12px; gap: 8px; }
+:is(#global-codex-panel, .ai-main-content) .compact-composer .context-chip:not(.attachment-card) { height: 28px; max-width: 240px; gap: 6px; padding-left: 8px; border-radius: 6px; background: var(--surface-2); }
+.compact-composer .context-chips { gap: 6px; scrollbar-width: thin; }
+.compact-composer .context-chip:not(.attachment-card) strong { max-width: 160px; }
+.compact-composer [hidden] { display: none !important; }
+.compact-composer :is(summary, button, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@container composer-controls (max-width: 440px) {
+  .compact-composer .composer-model-menu [id$="-config-summary"] { display: none; }
+}
+@container composer-controls (max-width: 340px) {
+  .compact-composer .composer-context-label { display: none; }
+  :is(#global-codex-panel, .ai-main-content) .compact-composer .composer-context-menu > summary { padding-inline: 7px; }
+}
+@container chat-layout (max-height: 420px) {
+  :is(#global-codex-panel, .ai-main-content) .chat-composer.compact-composer { margin-top: 5px; }
+  :is(#global-codex-panel, .ai-main-content) .chat-composer.compact-composer > textarea { min-height: 42px; max-height: 76px; padding-block: 9px 6px; }
+  :is(#global-codex-panel, .ai-main-content) .chat-composer.compact-composer > .composer-toolbar { height: 40px; min-height: 40px; padding-block: 3px 4px; }
+}

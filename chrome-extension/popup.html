@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8" /><link rel="stylesheet" href="popup.css" /></head>
+<body>
+  <main>
+    <div class="mark"><img src="argus-logo.png" alt="Argus" /></div>
+    <div><h1>Share this tab</h1><p id="message">Argus will capture text currently loaded in this tab.</p></div>
+  </main>
+  <div class="actions"><button id="share">Share current page</button><button id="deep-share" class="secondary">Deep capture logs</button></div>
+  <section id="pairing" class="pairing hidden"><strong>Pair with Argus</strong><small>In Argus, open AI Connections and generate a one-time pairing code.</small><div><input id="pairing-code" inputmode="numeric" maxlength="6" placeholder="6-digit code" /><button id="pair">Pair</button></div></section>
+  <div id="progress" class="progress hidden"><span></span><small>Capturing loaded rows…</small></div>
+  <small>Only this tab is shared. Password fields and form values are not captured.</small>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+.agent-question-host:empty { display: none; }
+.agent-question-host { width: 100%; min-width: 0; margin: 14px 0 22px; }
+.agent-question-card { min-width: 0; width: 100%; padding: 17px 18px; border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--line)); border-radius: 13px; background: color-mix(in srgb, var(--accent) 4%, var(--surface)); color: var(--text); }
+.agent-question-header { display: flex; align-items: center; gap: 9px; min-width: 0; margin: 0 0 8px; }
+.agent-question-symbol { display: inline-grid; place-items: center; flex: 0 0 23px; height: 23px; border-radius: 7px; background: color-mix(in srgb, var(--accent) 15%, var(--surface)); color: var(--accent); font-size: 13px; font-weight: 750; }
+.agent-question-card .agent-question-title { font-size: 14px; line-height: 1.4; margin: 0; letter-spacing: 0; }
+.agent-question-card .agent-question-status { margin: 0 0 15px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.agent-question-form { display: grid; gap: 15px; min-width: 0; }
+.agent-question-field { min-width: 0; width: 100%; border: 0; padding: 0; margin: 0; }
+.agent-question-label { display: block; width: 100%; float: none; padding: 0; margin: 0 0 8px; color: var(--text); font-size: 13px; line-height: 1.5; font-weight: 650; overflow-wrap: anywhere; }
+.agent-question-hint { display: block; margin: -2px 0 9px; color: var(--muted); font-size: 11px; }
+.agent-question-options { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 9px; }
+.agent-question-option { display: flex; gap: 8px; align-items: flex-start; flex: 1 1 180px; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); cursor: pointer; }
+.agent-question-option:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); }
+.agent-question-option input { flex: 0 0 auto; width: 14px; height: 14px; margin: 3px 0 0; accent-color: var(--accent); }
+.agent-question-option > span { min-width: 0; overflow-wrap: anywhere; }
+.agent-question-option strong { display: block; font-size: 12px; line-height: 1.5; font-weight: 650; }
+.agent-question-option small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.agent-question-card .agent-question-answer { display: block; width: 100%; min-width: 0; min-height: 68px; max-height: 230px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; outline: none; color: var(--text); background: var(--surface); font: inherit; font-size: 13px; line-height: 1.5; resize: vertical; }
+.agent-question-answer::placeholder { color: var(--muted); }
+.agent-question-answer:focus-visible, .agent-question-submit:focus-visible, .agent-question-cancel:focus-visible, .agent-question-option:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.agent-question-error { color: var(--red); margin: 0; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.agent-question-error:empty { display: none; }
+.agent-question-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 0; border: 0; }
+.agent-question-card .agent-question-cancel { min-height: 34px; padding: 8px 12px; font: inherit; font-size: 12px; line-height: 1.3; font-weight: 650; color: var(--text); background: transparent; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.agent-question-card .agent-question-cancel:hover:not(:disabled) { color: var(--red); border-color: color-mix(in srgb, var(--red) 60%, var(--line)); background: color-mix(in srgb, var(--red) 5%, var(--surface)); }
+.agent-question-card .agent-question-cancel:disabled { cursor: default; opacity: 0.55; }
+.agent-question-card .agent-question-submit { min-height: 34px; padding: 8px 15px; font-size: 12px; line-height: 1.3; font-weight: 700; background: var(--accent); color: var(--accent-ink); border: 1px solid transparent; border-radius: 8px; }
+.agent-question-card[aria-busy="true"] { cursor: progress; }
+@media (max-width: 720px) { .agent-question-card { padding: 13px; } .agent-question-option { flex-basis: 100%; } }

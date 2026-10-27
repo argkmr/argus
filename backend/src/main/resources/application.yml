@@ -1,0 +1,42 @@
+server:
+  address: 127.0.0.1
+  port: ${ARGUS_PORT:4175}
+  compression:
+    enabled: true
+    min-response-size: 1KB
+  http2:
+    # The private loopback API uses HTTP/1.1, matching Electron and coding-CLI clients.
+    # Do not advertise h2c upgrades: host validation relies on the explicit host:port.
+    enabled: false
+
+spring:
+  application:
+    name: argus
+  main:
+    banner-mode: "off"
+  jmx:
+    enabled: false
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          no-store: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: WARN
+
+argus:
+  data-directory: ${ARGUS_DATA_DIR:${user.home}/Library/Application Support/Argus Personal}
+  source-root: ${ARGUS_SOURCE_ROOT:}
+  build-id: ${ARGUS_BUILD_ID:development}
+  mcp-token: ${ARGUS_MCP_TOKEN:}

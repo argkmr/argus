@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Compact Nexus shortcut — isolated UI check</title>
+<style>body{margin:20px;font:14px system-ui;background:#101318;color:#eef1f6}select,button{margin:0 10px 12px 0;padding:8px}iframe{display:block;border:1px solid #657080;width:100%;height:140px}#result{white-space:pre-wrap}.offscreen{position:absolute;left:-20000px}</style></head>
+<body><h1>Compact Nexus shortcut</h1><p>Production markup and styles; synthetic tabs. No agent, storage, or backup calls.</p>
+<label>Appearance <select id="appearance"><option>dark</option><option>light</option></select></label>
+<label>Font <select id="font"><option value="comic-sans">Comic Sans</option><option value="system">System</option></select></label>
+<label>Width <select id="width"><option>640</option><option selected>1440</option><option>2560</option></select></label>
+<button id="show">Show preview</button><pre id="result">Checking…</pre><div id="preview"></div><div id="measure" class="offscreen"></div>
+<script type="module">
+import { nexusThemeVariables } from '/public/nexus-themes.mjs';
+const source = new DOMParser().parseFromString(await (await fetch('/public/index.html')).text(), 'text/html');
+const shortcut = source.querySelector('#nexus-shortcut').outerHTML;
+const links = [...source.querySelectorAll('link[rel="stylesheet"]')].map(link => { link.href = new URL(link.getAttribute('href'), location.origin).href; return link.outerHTML; }).join('');
+async function makeFrame(width, mode, font, zoom = 1) {
+  const iframe = document.createElement('iframe'); iframe.style.width = `${width}px`;
+  const ready = new Promise(resolve => iframe.onload = resolve);
+  const palette = Object.entries(nexusThemeVariables('ember',mode)).map(([key,value])=>`${key}:${value}`).join(';');
+  const themedShortcut = shortcut.replace('class="repository-nexus-button"', `class="repository-nexus-button" style="${palette}"`);
+  iframe.srcdoc = `<!doctype html><html data-theme="${mode}" data-font-family="${font}"><head>${links}<style>html,body{height:120px}</style></head><body data-view="global" style="zoom:${zoom}"><header class="titlebar"><div class="brand">Argus</div><div class="repo-tab-rail"><div class="repo-tabs"><div class="repo-tab-group-block"><button class="repo-tab-group-chip" style="--tab-group-color:#378cfa"><span class="repo-tab-group-name">CX-BE</span><small>9</small></button></div><div class="repo-tab"><button class="repo-tab-main"><span class="repo-dot"></span><span class="repo-tab-label">userprofileservice</span></button><button class="repo-tab-close" aria-label="Offboard fixture">×</button></div></div></div><div class="repository-toolbar">${themedShortcut}</div></header></body></html>`;
+  document.querySelector('#measure').append(iframe); await ready; await iframe.contentDocument.fonts.ready;
+  const nexus = iframe.contentDocument.querySelector('#nexus-shortcut');
+  for (const [key,value] of Object.entries(nexusThemeVariables('ember',mode))) nexus.style.setProperty(key,value);
+  return iframe;
+}
+const failures = []; let checks = 0;
+for (const width of [640,1440,2560]) for (const mode of ['dark','light']) for (const font of ['system','comic-sans']) for (const zoom of [1,1.22]) {
+  const iframe = await makeFrame(width,mode,font,zoom), doc = iframe.contentDocument, win = iframe.contentWindow;
+  const nexus = doc.querySelector('#nexus-shortcut'), tab = doc.querySelector('.repo-tab');
+  const style = win.getComputedStyle(nexus), a=nexus.getBoundingClientRect(), b=tab.getBoundingClientRect();
+  if (Math.abs(parseFloat(style.height)-28)>.05 || Math.abs(parseFloat(win.getComputedStyle(nexus.querySelector('strong')).fontSize)-12)>.05 || Math.abs((a.top+a.bottom)-(b.top+b.bottom))>1 || nexus.scrollWidth>nexus.clientWidth || a.right>doc.documentElement.clientWidth+1) failures.push({width,mode,font,zoom,height:style.height,rect:a.toJSON()});
+  nexus.focus(); if(doc.activeElement!==nexus || win.getComputedStyle(nexus).outlineStyle==='none') failures.push({width,mode,font,zoom,focus:'missing'});
+  checks++; iframe.remove();
+}
+document.querySelector('#result').textContent = JSON.stringify({status:failures.length?'FAIL':'PASS',checks,failures},null,2);
+async function preview(){ const iframe=await makeFrame(Number(document.querySelector('#width').value),document.querySelector('#appearance').value,document.querySelector('#font').value);document.querySelector('#preview').replaceChildren(iframe);iframe.style.maxWidth='100%'; }
+document.querySelector('#show').onclick=preview;await preview();
+</script></body></html>

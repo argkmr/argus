@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en" data-theme="dark" style="--titlebar-height: 66px; --tools-rail-width: 0px">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Argus synthetic backup loading preview</title>
+  <link rel="stylesheet" href="/public/styles.css" />
+  <link rel="stylesheet" href="/public/font-family.css" />
+  <style>
+    .fixture-controls { position: fixed; inset: 0 0 auto; z-index: 10000; display: flex; align-items: center; flex-wrap: wrap; gap: 7px; min-height: 58px; padding: 8px 14px; background: var(--surface); border-bottom: 1px solid var(--line); font-size: 11px; }
+    .fixture-controls button { padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-3); color: var(--text); font: inherit; }
+    .fixture-controls span { color: var(--muted); font-size: 10px; }
+    .fixture-font { display: flex; align-items: center; gap: 6px; width: 138px; }
+    .fixture-controls #fixture-note { flex: 1 1 220px; }
+  </style>
+</head>
+<body>
+  <nav class="fixture-controls" aria-label="Synthetic fixture controls">
+    <button id="fixture-open" type="button">Open backup</button>
+    <button id="fixture-access" type="button">Resolve access</button>
+    <button id="fixture-status" type="button">Resolve settings</button>
+    <button id="fixture-fail" type="button">Fail settings</button>
+    <button id="fixture-theme" type="button">Toggle theme</button>
+    <label class="fixture-font" for="font-family-select">Font<select id="font-family-select"><option value="system">System</option><option value="comic-sans">Comic Sans</option></select></label>
+    <span id="fixture-note">Only synthetic data. All backup API calls are mocked.</span>
+  </nav>
+  <main id="fixture-dialogs"></main>
+  <script type="module">
+    import { backupFieldsValid, normalizeBackupRepositoryUrl } from "/public/backup-form.js";
+    import { initializeFontFamilyPicker } from "/public/font-family.mjs";
+    initializeFontFamilyPicker({ document, storage: { getItem: () => null, setItem: () => {} }, save: async () => {} });
+    new ResizeObserver(([entry]) => document.documentElement.style.setProperty("--titlebar-height", `${Math.ceil(entry.target.getBoundingClientRect().height) + 8}px`)).observe(document.querySelector(".fixture-controls"));
+    const [source, html] = await Promise.all(["/public/app.js", "/public/index.html"].map(async path => (await fetch(path)).text()));
+    const $ = selector => document.querySelector(selector), $$ = selector => [...document.querySelectorAll(selector)];
+    $("#fixture-dialogs").innerHTML = html.match(/<button id="backup-toggle"[\s\S]*?<\/button>/)[0]
+      + ["backup-dialog", "backup-confirm-dialog"].map(id => html.match(new RegExp(`<dialog id="${id}"[\\s\\S]*?</dialog>`))[0]).join("");
+    const state = { backupAccessAllowed: false, backupAccessEpoch: 0, backupAccessRequest: 0, backupStatus: null, backgroundJobs: [] };
+    const pending = [];
+    const api = path => {
+      if (!["/api/backup/access", "/api/backup/status"].includes(path)) return Promise.reject(new Error("This read-only fixture blocks backup actions."));
+      $("#fixture-note").textContent = `Waiting for synthetic ${path.endsWith("access") ? "access" : "settings"}. Use the fixture controls to continue.`;
+      return new Promise((resolve, reject) => pending.push({ path, resolve, reject }));
+    };
+    const showAppDialog = id => { for (const dialog of $$("dialog[open]")) if (dialog.id !== id) dialog.close(); $("#" + id).show(); return true; };
+    const setRefreshLoading = (button, loading) => { button.disabled = loading; button.classList.toggle("refreshing", loading); };
+    const backup = source.slice(source.indexOf("function formatBackupSize("), source.indexOf("const DATA_STORAGE_CATEGORIES ="));
+    const active = source.slice(source.indexOf("function backgroundJobIsActive("), source.indexOf("function backgroundJobStatusLabel("));
+    const actions = new Function("$", "$$", "state", "api", "backupFieldsValid", "normalizeBackupRepositoryUrl", "showAppDialog", "setRefreshLoading", "toast", "escapeHtml", `${active}\n${backup}\nreturn { setBackupAccess, openBackupDialog, closeBackupDialog, refreshBackupStatus, updateBackupFormValidity, chooseBackupFolder, toggleBackupPreview };`)
+      ($, $$, state, api, backupFieldsValid, normalizeBackupRepositoryUrl, showAppDialog, setRefreshLoading, message => $("#fixture-note").textContent = message, value => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;"));
+    const status = { repositoryUrl: "git@bitbucket.org:synthetic-workspace/argus-backup.git", bitbucketAccessConfirmed: true, hasRecoveryPassphrase: true, driveDirectory: "/synthetic/Google Drive/My Drive", driveAutoDetected: true, driveAccount: "preview@example.invalid", branch: "main", changedFiles: [" M public/app.js", " M public/styles.css"], sourceFileCount: 100, sourceRoot: "/synthetic/packaged-source" };
+    const settle = (path, error) => {
+      const index = pending.findIndex(request => request.path === path);
+      if (index < 0) { $("#fixture-note").textContent = "No matching pending request."; return; }
+      const [request] = pending.splice(index, 1);
+      error ? request.reject(new Error("Synthetic settings request failed.")) : request.resolve(path.endsWith("access") ? { allowed: true } : { ...status });
+      $("#fixture-note").textContent = "Synthetic response delivered. No live backup APIs were contacted.";
+    };
+    $("#fixture-open").onclick = actions.openBackupDialog;
+    $("#fixture-access").onclick = () => settle("/api/backup/access");
+    $("#fixture-status").onclick = () => settle("/api/backup/status");
+    $("#fixture-fail").onclick = () => settle("/api/backup/status", true);
+    $("#fixture-theme").onclick = () => document.documentElement.dataset.theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    for (const id of ["refresh-backup-status", "retry-backup-status"]) $("#" + id).onclick = actions.refreshBackupStatus;
+    $("#backup-repository-url").oninput = () => { state.backupDraftRepositoryUrl = $("#backup-repository-url").value; actions.updateBackupFormValidity(); };
+    $("#backup-passphrase").oninput = actions.updateBackupFormValidity;
+    $("#choose-backup-folder").onclick = actions.chooseBackupFolder;
+    $("#toggle-backup-preview").onclick = actions.toggleBackupPreview;
+    $$('[data-close-dialog]').forEach(button => button.onclick = () => $("#" + button.dataset.closeDialog).close());
+    $("#backup-dialog").onclose = () => { if (!$("#backup-dialog").open) actions.closeBackupDialog(); };
+    actions.setBackupAccess(true);
+    $("#backup-toggle").classList.add("hidden");
+    await actions.openBackupDialog();
+  </script>
+</body>
+</html>

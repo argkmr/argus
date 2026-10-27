@@ -1,0 +1,23 @@
+#workspace-task-rail-toggle { display: none !important; }
+.workspace-activity-stack { position: fixed; z-index: 91; left: 4px; top: calc(var(--titlebar-height) + var(--rail-context-offset, 0px) + 7px); display: flex; flex-direction: column; align-items: center; gap: 6px; width: var(--rail-control-size, 32px); }
+.workspace-activity-stack > .workspace-rail-action, .workspace-activity-stack > .app-menu > summary { position: relative !important; inset: auto !important; flex: 0 0 var(--rail-control-size, 32px); width: var(--rail-control-size, 32px); height: var(--rail-control-size, 32px); margin: 0; padding: 0; display: grid; place-items: center; }
+.workspace-activity-stack > .workspace-rail-action.hidden { display: none; }
+.workspace-activity-stack > .app-menu { position: static; inset: auto; width: auto; height: auto; min-height: 0; background: transparent; }
+.workspace-activity-stack .app-menu-panel { position: fixed; inset: calc(var(--titlebar-height) + var(--rail-context-offset, 0px)) auto 0 var(--tools-rail-width); }
+.workspace-activity-stack .workspace-rail-icon { width: 20px; height: 20px; flex: none; }
+.ai-sticky-header:has(.chat-history-toggle) { display: flex; flex-direction: row; gap: 7px; align-items: center; }
+.ai-sticky-header > .chat-history-toggle { order: -1; }
+.ai-sticky-header .ai-context-header { flex: 1; min-width: 0; }
+.chat-history-toggle { flex: none; width: 31px; height: 31px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 7px; cursor: pointer; }
+.chat-history-toggle:hover, .chat-history-toggle[aria-expanded="true"] { color: var(--accent); background: var(--surface-2); }
+.chat-history-popover::backdrop { background: #0002; }
+body #repository-task-sidebar.chat-history-popover { position: fixed !important; inset: var(--history-top, 140px) var(--history-right, 22px) auto auto !important; width: min(360px, calc(100vw - 44px)) !important; height: min(600px, calc(100dvh - 170px)) !important; min-height: 0 !important; max-height: calc(100dvh - 170px); margin: 0 !important; padding: 12px !important; border: 1px solid var(--line) !important; border-radius: 12px; background: var(--surface) !important; color: var(--text); overflow: auto; box-shadow: 0 16px 50px #0006; visibility: visible !important; }
+.chat-history-popover:not(:popover-open) { display: none !important; }
+.chat-history-popover:popover-open { display: flex !important; flex-direction: column; gap: 12px; }
+.chat-history-popover .task-list { min-height: 0; overflow: auto; }
+.chat-history-popover .task-sidebar-actions { display: flex; gap: 6px; }
+body.repository-ide-enabled .ai-canvas { position: relative; }
+body.repository-ide-enabled .ai-canvas > .task-sidebar { display: none !important; }
+/* Collapsed legacy rails hide their children; a top-layer history is not a rail. */
+body #repository-task-sidebar.chat-history-popover:popover-open > header { display: flex !important; flex: none; height: auto; min-height: 44px; padding: 0; }
+body #repository-task-sidebar.chat-history-popover:popover-open > .task-list { display: flex !important; flex-direction: column; flex: 1 1 auto; height: auto; min-height: 0; overflow-y: auto; }

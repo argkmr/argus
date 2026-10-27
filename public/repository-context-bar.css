@@ -1,0 +1,135 @@
+/* Compact, grouped repository metadata. The row keeps its height while long
+   labels yield space to the port picker and the two persistent tool actions. */
+:root { --repository-context-height: 38px; }
+.context-strip {
+  height: var(--repository-context-height);
+  min-height: var(--repository-context-height);
+  max-height: var(--repository-context-height);
+  flex: 0 0 var(--repository-context-height);
+  min-width: 0;
+  gap: clamp(4px, 1.1%, 8px);
+  padding-block: 0;
+  padding-right: var(--header-gutter);
+  background: var(--bg);
+  container: repository-context / inline-size;
+}
+.context-strip > div:is(.context-repository, .context-stat) {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 6px;
+  padding-block: 0;
+  padding-right: 0;
+  border-left: 0;
+  padding-left: 0;
+}
+.context-strip > div.context-repository {
+  flex: 0 1 auto;
+  max-width: 180px;
+  height: 26px;
+  padding-inline: 9px;
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.context-strip > div.context-branch-item {
+  flex: 0 1 auto;
+  min-width: 36px;
+  max-width: min(440px, 38vw);
+  height: 26px;
+  padding-inline: 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--surface) 60%, var(--bg));
+}
+.context-strip > div.context-changes-item {
+  flex: 0 0 auto;
+  height: 24px;
+  padding-inline: 6px;
+  border-radius: 5px;
+  color: var(--muted);
+}
+.context-strip > div.context-changes-item[data-change-state="changed"] {
+  color: var(--orange);
+  background: color-mix(in srgb, var(--orange) 9%, transparent);
+}
+.context-strip .context-changes-item .context-bar-icon { color: inherit; }
+.context-strip .context-bar-icon { flex: 0 0 14px; color: var(--muted); }
+.context-strip .live-dot { flex: 0 0 6px; width: 6px; height: 6px; box-shadow: none; }
+.context-strip :is(#context-repo, #context-branch, #context-change-count) {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+.context-strip #context-repo { font-weight: 600; }
+.context-strip #context-change-count { font-variant-numeric: tabular-nums; }
+.context-strip .repository-ports { flex: 0 0 auto; }
+.context-strip .repository-ports .repository-ports-trigger {
+  height: 28px;
+  min-height: 28px;
+  max-width: 170px;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid var(--line-soft);
+  background: var(--surface);
+  border-radius: 6px;
+}
+.context-strip .repository-ports .repository-ports-trigger-copy { display: flex; flex-direction: row; gap: 0; }
+.context-strip .repository-ports .repository-ports-trigger-port { font-size: 11px; line-height: 1.4; }
+.context-strip .repository-ports .repository-ports-trigger-state { display: none; }
+.context-strip .repository-context-actions { gap: 4px; margin-left: auto; padding-left: 8px; border-left: 1px solid var(--line-soft); }
+.context-strip .repository-context-actions :is(#project-structure-toggle, #repository-chat-toggle) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 30px;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  border-radius: 6px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  box-shadow: none;
+}
+.context-strip .repository-context-actions :is(#project-structure-toggle, #repository-chat-toggle):hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+}
+.context-strip .repository-context-actions #repository-chat-toggle[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  color: var(--accent);
+}
+.context-strip .repository-context-actions svg { display: block; flex: 0 0 16px; }
+.context-strip .repository-context-actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.context-strip .context-bar-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+@container repository-context (max-width: 700px) {
+  .context-strip > div.context-repository { max-width: 100px; padding-inline: 6px; }
+  .context-strip > div.context-branch-item { flex-basis: 80px; padding-inline: 6px; }
+  .context-strip .repository-ports .repository-ports-trigger { max-width: 135px; padding-inline: 5px; gap: 4px; }
+  .context-strip .repository-context-actions { padding-left: 4px; }
+}
+@container repository-context (max-width: 500px) {
+  .context-strip > div.context-repository { flex: 0 0 6px; padding: 0; border: 0; background: transparent; }
+  .context-strip #context-repo { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); }
+  .context-strip > div.context-changes-item { gap: 3px; padding-inline: 3px; }
+}

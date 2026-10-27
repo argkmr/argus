@@ -1,0 +1,7 @@
+version: 1
+name: codex-public-rates-errors
+description: Error-condition member; shares the synthetic public documentation handler.
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ../codex-public-rates/default.js

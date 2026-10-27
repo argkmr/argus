@@ -1,0 +1,846 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Argus Personal</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/argus-logo.svg">
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem("argus-theme")||"dark";document.documentElement.dataset.fontSize=localStorage.getItem("argus-font-size")||"comfortable";document.documentElement.dataset.fontFamily=localStorage.getItem("argus-font-family")||"system";}catch{}</script>
+  <link rel="stylesheet" href="/styles.css?v=20261027-404">
+  <link rel="stylesheet" href="/chat-revisions.css?v=20261027-404">
+  <link rel="stylesheet" href="/git-stash.css?v=20261027-404">
+  <link rel="stylesheet" href="/git-bulk-revert.css?v=20261027-404">
+  <link rel="stylesheet" href="/font-family.css?v=20261027-404">
+  <link rel="stylesheet" href="/agent-question-cards.css?v=20261027-404">
+  <link rel="stylesheet" href="/task-prompt-notes.css?v=20261027-404">
+  
+  <link rel="stylesheet" href="/repository-ide-shell.css?v=20261027-404">
+  <link rel="stylesheet" href="/repository-ports.css?v=20261027-404">
+  <link rel="stylesheet" href="/repository-tab-search.css?v=20261027-404">
+  <link rel="stylesheet" href="/repository-ide.css?v=20261027-404">
+  <link rel="stylesheet" href="/ide-code-chat.css?v=20261027-404">
+  
+  <link rel="stylesheet" href="/compact-composer.css?v=20261027-404">
+  <link rel="stylesheet" href="/daily-planner.css?v=20261027-404">
+  <link rel="stylesheet" href="/planner-time-picker.css?v=20261027-404">
+  <link rel="stylesheet" href="/diagram-studio-shell.css?v=20261027-404">
+  <link rel="stylesheet" href="/repository-context-bar.css?v=20261027-404">
+  <link rel="stylesheet" href="/project-structure-polish.css?v=20261027-404">
+  <link rel="stylesheet" href="/ai-context-header.css?v=20261027-404">
+  <link rel="stylesheet" href="/repository-ai-kit.css?v=20261027-404">
+  <link rel="stylesheet" href="/chat-history-panel.css?v=20261027-404">
+</head>
+<body>
+  <button id="workspace-task-rail-toggle" class="workspace-rail-action" type="button" aria-label="Open task history"><svg class="workspace-rail-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5l-4 3v-3Z" transform="translate(0 -1)"></path><path d="M7 8h10M7 12h7"></path></svg><span class="workspace-rail-tooltip" aria-hidden="true">Tasks</span></button>
+  
+  <button id="daily-planner-toggle" class="workspace-rail-action daily-planner-rail-action" type="button" aria-label="Open daily tasks" aria-controls="daily-planner-panel"><svg class="workspace-rail-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M4 10h16m-12 5 3 3 5-5"></path></svg><span class="workspace-rail-tooltip" aria-hidden="true">Daily tasks</span></button>
+  <button id="diagram-studio-rail-toggle" class="workspace-rail-action diagram-studio-rail-action" type="button" aria-label="Open canvas" aria-controls="diagram-studio-panel"><svg class="workspace-rail-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="3"></rect><rect x="6.5" y="7" width="4" height="3.5" rx=".8"></rect><path d="M10.5 8.75H14a2.5 2.5 0 0 1 2.5 2.5V14"></path><circle cx="16.5" cy="16" r="2"></circle></svg><span class="workspace-rail-tooltip" aria-hidden="true">Canvas</span></button>
+  <details id="app-menu" class="app-menu">
+    <summary aria-label="Open workspace tools" aria-controls="app-menu-panel" aria-expanded="false"><svg class="workspace-rail-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><path d="M14 17.5h7M17.5 14v7"></path></svg><span class="workspace-rail-tooltip" aria-hidden="true">Workspace tools</span></summary>
+    <div id="app-menu-panel" class="app-menu-panel" role="region" aria-labelledby="workspace-tools-heading">
+      <header><div><small>ARGUS</small><strong id="workspace-tools-heading">Workspace tools</strong></div><button id="workspace-tools-close" type="button" aria-label="Close workspace tools" title="Close workspace tools">×</button></header>
+      <button id="ai-status-pill" class="ai-status-pill" title="AI connection details"><span class="status-dot"></span><strong id="ai-status-text">Detecting AI…</strong><span class="menu-chevron">›</span></button>
+      
+      <button id="api-client-toggle" class="api-client-button"><span>↗</span><strong>API Client</strong><em id="api-request-count">0</em><span class="menu-chevron">›</span></button>
+      <button id="json-explorer-toggle" class="json-explorer-menu-button" type="button" title="Format, search, and explore JSON locally"><span aria-hidden="true">{}</span><strong>JSON Explorer</strong><span class="menu-chevron">›</span></button>
+      <button id="services-toggle" class="services-button no-running"><span class="status-dot"></span><strong>Services</strong><em id="running-count">0</em><span class="menu-chevron">›</span></button>
+      
+      
+      <button id="backup-toggle" class="backup-button hidden" type="button" hidden="" disabled="" title="Back up Argus to Git remote and Google Drive"><span>☁</span><strong>Save Argus Changes</strong><span class="menu-chevron">›</span></button>
+      <button id="data-storage-toggle" class="data-storage-button" type="button" title="Models, retrieval, exact storage locations and privacy"><span>▦</span><strong>Local data</strong><span class="menu-chevron">›</span></button>
+      <section class="appearance-settings" aria-labelledby="appearance-settings-heading">
+        <h2 id="appearance-settings-heading">Appearance</h2>
+        <div class="appearance-row font-size-setting"><span id="font-size-label" class="appearance-label">Font size</span><div role="group" aria-labelledby="font-size-label"><button type="button" data-font-size="compact" title="Compact font size" aria-label="Compact font size">A−</button><button type="button" data-font-size="comfortable" title="Comfortable font size" aria-label="Comfortable font size">A</button><button type="button" data-font-size="large" title="Large font size" aria-label="Large font size">A+</button></div></div>
+        <div class="appearance-row font-family-setting">
+          <label for="font-family-select" class="appearance-label">Font</label>
+          <select id="font-family-select" aria-describedby="font-family-status" title="Interface and chat font. Code stays monospaced."><option value="system">System</option><option value="serif">Serif</option><option value="mono">Mono</option><option value="comic-sans">Comic Sans</option></select>
+          <small id="font-family-status" role="status" aria-live="polite">Interface and chats · code stays monospaced.</small>
+          <button id="font-family-retry" type="button" hidden="">Retry saving font</button>
+        </div>
+        <div class="appearance-row">
+          <span class="appearance-label">Theme</span>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light mode" title="Switch to light mode"><span class="theme-menu-icon" aria-hidden="true">☀</span><strong id="theme-menu-label">Light mode</strong></button>
+        </div>
+      </section>
+    </div>
+  </details>
+  <div class="app-shell">
+    <header class="titlebar">
+      <a id="brand-home" class="brand" href="#" aria-label="Argus home">
+        <span class="brand-mark"><img src="/assets/argus-logo.svg" alt=""></span>
+        <span>Argus</span>
+      </a>
+      <nav class="app-navigation" aria-label="Argus navigation history">
+        <button id="app-navigation-back" type="button" aria-label="Go back in Argus" title="Back · up to 10 previous states" disabled="">←</button>
+        <button id="app-navigation-forward" type="button" aria-label="Go forward in Argus" title="Forward · up to 10 next states" disabled="">→</button>
+      </nav>
+      <div id="repo-tab-rail" class="repo-tab-rail">
+        <button id="repo-tabs-scroll-left" class="repo-tabs-scroll repo-tabs-scroll-left hidden" type="button" aria-label="Scroll repository tabs left" title="Previous repositories">‹</button>
+        <nav id="repo-tabs" class="repo-tabs" aria-label="Repositories" tabindex="0" aria-describedby="repository-tab-drag-help"></nav>
+        <span id="repository-tab-drag-help" class="repository-tab-sr-only">Drag tabs or group labels horizontally to reorder. Drop a tab onto a group label to join it. Use Alt+Shift+Left or Right to move the focused tab or group with the keyboard.</span>
+        <span id="repository-tab-move-status" class="repository-tab-sr-only" role="status" aria-live="polite"></span>
+        <button id="repo-tabs-scroll-right" class="repo-tabs-scroll repo-tabs-scroll-right hidden" type="button" aria-label="Scroll repository tabs right" title="More repositories">›</button>
+      </div>
+      <div class="repository-toolbar" aria-label="Repository actions">
+        <button id="repository-tab-search-toggle" class="repository-tab-search-toggle" type="button" popovertarget="repository-tab-search-popover" aria-label="Search repositories" aria-haspopup="dialog" aria-expanded="false" aria-controls="repository-tab-search-popover" title="Search tabs and repositories"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m16 16 4 4"></path></svg></button>
+        <section id="repository-tab-search-popover" class="repository-tab-search-popover" popover="auto" role="dialog" aria-labelledby="repository-tab-search-heading">
+          <div class="repository-tab-search-heading"><h2 id="repository-tab-search-heading">Find a repository</h2><button id="repository-tab-search-close" type="button" aria-label="Close repository search" title="Close (Esc)">×</button></div>
+          <label class="repository-tab-search-field" for="repository-tab-search-input"><span class="repository-tab-sr-only">Search by repository name, folder or tab group</span><input id="repository-tab-search-input" type="search" placeholder="Search name, folder or group…" autocomplete="off" spellcheck="false" aria-controls="repository-tab-search-results"></label>
+          <div id="repository-tab-search-results" class="repository-tab-search-results" aria-label="Matching repositories"></div>
+          <p id="repository-tab-search-status" class="repository-tab-search-status" role="status" aria-live="polite"></p>
+        </section>
+        <button id="nexus-shortcut" class="repository-nexus-button" type="button" title="Open Nexus · cross-repository chat" aria-label="Open Nexus"><span aria-hidden="true">✦</span><strong>Nexus</strong></button>
+        <div class="repository-tab-tools">
+          <button id="repository-tab-tools-toggle" class="repository-tab-tools-toggle" type="button" popovertarget="repository-tab-tools-menu" aria-label="Tab tools" aria-haspopup="dialog" aria-expanded="false" aria-controls="repository-tab-tools-menu" title="Tab tools"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+          <section id="repository-tab-tools-menu" class="repository-tab-tools-menu" popover="auto" role="dialog" aria-labelledby="repository-tab-tools-heading">
+            <p id="repository-tab-tools-heading" class="repository-tab-tools-heading">TAB TOOLS</p>
+            <button id="add-repo" class="repository-tab-tools-action" type="button"><span aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M3 7h6l2 2h10v10H3Z"></path><path d="M12 11v6m-3-3h6"></path></svg></span><strong>Onboard repository</strong><small>Connect a folder or clone a repository</small></button>
+            <button id="manage-repositories" class="repository-tab-tools-action" type="button"><span aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16m4-11h5m-5 4h5"></path></svg></span><strong>Manage repositories</strong><small>Find, open or offboard a repository</small></button>
+            <hr>
+            <p class="repository-tab-tools-heading">TAB GROUPS</p>
+            <div id="repository-tab-tools-groups" class="repository-tab-tools-groups"></div>
+            <button id="repo-groups" class="repository-tab-tools-action" type="button"><span aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><path d="M14 17.5h7m-3.5-3.5v7"></path></svg></span><strong>Manage tab groups</strong><small>Organize groups, colours and members</small></button>
+          </section>
+        </div>
+      </div>
+    </header>
+
+    <main id="empty-state" class="empty-state hidden">
+      <div class="empty-graphic"><img src="/assets/argus-logo.svg" alt="Argus"></div>
+      <p class="eyebrow">YOUR AI-NATIVE WORKSPACE</p>
+      <h1>One calm place for every repository.</h1>
+      <p>Open a Git repository. Argus will show only the context, changes and local services that belong to the active tab.</p>
+      <button class="primary-button" data-open-repo="">Open your first repository</button>
+    </main>
+
+    <main id="workspace" class="workspace hidden">
+      <section class="center-stage">
+        <div id="argus-view" class="argus-view">
+          <div class="context-strip" role="group" aria-label="Repository context">
+            <div id="context-repository-item" class="context-repository" role="group" title="Active repository · isolated chat context"><span class="live-dot" aria-hidden="true"></span><strong id="context-repo">Repository</strong><span class="context-bar-sr-only"> · isolated chat context</span></div>
+            <div id="context-branch-item" class="context-stat context-branch-item" role="group" title="Current branch"><svg class="context-bar-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="6" cy="5" r="2.5"></circle><circle cx="18" cy="5" r="2.5"></circle><circle cx="6" cy="19" r="2.5"></circle><path d="M6 7.5v9m12-9V9a6 6 0 0 1-6 6H6"></path></svg><span class="context-bar-sr-only">Current branch: </span><span id="context-branch">—</span></div>
+            <div id="context-changes-item" class="context-stat context-changes-item" role="group" title="Changed files"><svg class="context-bar-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"></path><path d="M14 3v6h6M8 14h8M12 11v6"></path></svg><span id="context-change-count">0</span><span class="context-bar-sr-only"> changed files</span></div>
+            <div id="repository-ports" class="context-stat repository-ports"></div>
+            <nav class="repository-context-actions" aria-label="Repository tools">
+              <button id="repository-chat-toggle" type="button" aria-label="Hide AI chat" title="Hide AI chat · keep working in code" aria-pressed="true" aria-expanded="true" aria-controls="repository-ai-chat" disabled=""><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a7.5 7.5 0 0 1-7.5 7.5H7l-4 3V4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"></path><path d="M7 7h10M7 11h7"></path></svg></button>
+              <button id="project-structure-toggle" class="project-structure-toggle" type="button" title="Project structure · inspect runtime, modules and build structure" aria-label="Project structure"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="8" y="3" width="8" height="5" rx="1.2"></rect><rect x="2" y="16" width="8" height="5" rx="1.2"></rect><rect x="14" y="16" width="8" height="5" rx="1.2"></rect><path d="M12 8v4M6 16v-4h12v4"></path></svg></button>
+            </nav>
+          </div>
+          <div id="repository-workbench">
+          <section id="repository-ide-host" aria-label="Repository code editor" hidden=""></section>
+          <div class="ai-canvas">
+            <aside class="task-sidebar" id="repository-task-sidebar"><button class="task-panel-rail" type="button" data-task-panel-toggle="repository" aria-label="Open local tasks"><span>Tasks</span></button><header><div><small>LOCAL TASKS</small><strong>Task history</strong></div><div class="task-sidebar-actions"><button id="new-repository-task" title="Start a separate task">＋</button><button id="repository-task-history-close" type="button" title="Close task history (Esc)" aria-label="Close task history">×</button></div></header><div id="repository-task-list" class="task-list"></div></aside>
+            <div id="repository-task-resizer" class="task-sidebar-resizer" role="separator" aria-label="Resize task history"></div>
+            <div id="repository-ai-chat" class="ai-main-content">
+            <div class="ai-sticky-header">
+              <div id="local-ai-info" class="ai-context-header">
+                <button id="local-ai-info-toggle" class="ai-context-summary" type="button" aria-label="AI context and connection details" aria-expanded="false" aria-controls="local-ai-details" aria-haspopup="dialog">
+                  <span class="ai-context-provider"><span id="local-ai-summary-status" class="ai-context-status" data-state="checking" aria-hidden="true"></span><strong id="local-ai-summary-provider">Codex</strong></span>
+                  <span id="local-ai-summary-repository" class="ai-context-repository">Repository AI</span>
+                  <span class="ai-context-mode"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5 4 4M4 20l5-1L20 8a2.8 2.8 0 0 0-4-4L5 15Z"></path></svg><span id="local-ai-summary-mode">Edit</span></span>
+                  <svg class="ai-context-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+                <section id="local-ai-details" class="ai-context-details" popover="auto" role="dialog" aria-labelledby="local-ai-details-title">
+                  <header><strong id="local-ai-details-title">AI context</strong><button id="local-ai-details-close" type="button" aria-label="Close AI context details" title="Close (Esc)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button></header>
+                  <dl>
+                    <div><dt>CONNECTED AI</dt><dd><strong id="local-ai-provider">Codex</strong><span id="local-ai-version">Checking…</span></dd></div>
+                    <div><dt>CONTEXT</dt><dd><strong>Active service only</strong><span id="local-ai-repository">—</span></dd></div>
+                    <div><dt>ACCESS</dt><dd><strong id="local-ai-access">Can edit and use Git</strong><span>Direct local tools · active-repo policy</span></dd></div>
+                    <div><dt>REPOSITORY AI</dt><dd><strong id="local-codex-title" class="repository-ai-title">Service AI</strong><span>Private to this repository</span></dd></div>
+                  </dl>
+                </section>
+              </div>
+            </div>
+            <div id="repo-agent-tabs" class="agent-tabs"></div>
+            <div class="chat-scroll-region">
+            <section id="agent-conversation" class="chat-thread is-empty" aria-live="polite">
+              <div class="chat-empty-state"><p class="eyebrow">ACTIVE REPOSITORY ONLY</p><h1>What are we shipping?</h1><p>Describe the outcome in plain English. Your agent can inspect, edit and test this repository while every modification stays visible in Git.</p></div>
+            </section>
+            <section id="agent-output-card" class="agent-output-card chat-live-response hidden">
+              <article class="chat-message assistant">
+                <span class="chat-avatar"><img src="/assets/argus-logo.svg" alt=""></span>
+                <div class="chat-message-body">
+                  <div class="chat-message-meta">Argus<span class="chat-response-status" role="status"><span id="agent-status-dot" class="pulse-dot" aria-hidden="true"></span><span id="agent-status">Working</span></span></div>
+                  <header class="chat-answer-label"><span>Response</span></header>
+                  <div id="agent-output" class="agent-rendered-output chat-message-content"></div>
+                </div>
+              </article>
+            </section>
+            <div id="agent-question-card-host" class="agent-question-host"></div>
+            </div>
+            <div class="chat-navigation-slot"><nav class="chat-navigation" data-chat-navigation="repository" aria-label="Repository chat navigation" hidden="">
+              <div class="chat-checkpoint-stepper" role="group" aria-label="Saved checkpoints"><button type="button" data-chat-nav="previous" aria-label="Previous checkpoint" title="Previous checkpoint" disabled="">↑</button><span class="chat-checkpoint-count" data-chat-checkpoint-count="" title="Mark a saved message to add a checkpoint">0</span><button type="button" data-chat-nav="next" aria-label="Next checkpoint" title="Next checkpoint" disabled="">↓</button></div>
+              <button type="button" class="chat-jump-bottom" data-chat-nav="bottom" aria-label="Scroll to bottom" title="Scroll to bottom" disabled=""><span aria-hidden="true">↓</span><span>Latest</span></button>
+              <span class="chat-navigation-status" data-chat-checkpoint-status="" role="status" aria-live="polite"></span>
+            </nav></div>
+            <div class="suggestion-row">
+              <button data-prompt="Explain the architecture and the most important business flows in this repository.">Understand this repo</button>
+              <button data-prompt="Inspect the current Git changes, find risks or bugs, and suggest precise fixes.">Review my changes</button>
+              <button data-prompt="Run the relevant tests, investigate any failures, and fix the root cause.">Fix failing tests</button>
+              <button data-prompt="Find the API endpoint and its complete cURL in this repository, then add a ready-to-send request to the Argus API client.">Extract API request</button>
+            </div>
+            <div class="prompt-card chat-composer compact-composer" data-composer-scope="repository">
+              <textarea id="agent-prompt" placeholder="For example: Find why checkout fails when a coupon expires, fix it, and add a regression test…"></textarea>
+              <div id="agent-context-tray" class="context-tray"><div class="context-chips"></div></div>
+              <div class="prompt-toolbar composer-toolbar">
+                <details class="composer-menu composer-context-menu">
+                  <summary class="composer-context-toggle" aria-label="Attachments and context" aria-haspopup="dialog" aria-expanded="false" aria-controls="repository-composer-context"><svg class="composer-context-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"></path></svg><span class="composer-context-label">Context</span><span data-composer-context-count="" hidden=""></span></summary>
+                  <div id="repository-composer-context" popover="auto" class="composer-popover composer-context-popover" role="dialog" aria-label="Attachments and context">
+                    <header><strong>Attachments &amp; context</strong><button type="button" data-composer-menu-close="" aria-label="Close context menu">×</button></header>
+                <input id="repository-file-input" class="hidden" type="file" multiple="">
+                <div class="composer-attachment-actions">
+                <button type="button" class="attach-browser-button" data-attach-file="repository" title="Attach files from this Mac"><span>＋</span> File</button>
+                <button type="button" class="attach-browser-button" data-attach-browser="repository" title="Attach the latest tab shared by the Argus Chrome extension"><span>◉</span> Chrome tab</button>
+                </div>
+                <label class="context-mode-control" title="Include relevant previous chat context by default. Choose Fresh request to skip history lookup."><span>History</span><select id="agent-context-mode" aria-label="Previous chat context"><option value="fresh">Fresh request</option><option value="history" selected="">Include previous chat context</option></select></label>
+                <div id="repository-task-notes" class="task-notes-bar" aria-label="Notes for this repository task"></div>
+                  </div>
+                </details>
+                  <details class="composer-menu model-settings-menu composer-model-menu">
+                    <summary aria-label="Model and request settings" aria-haspopup="dialog" aria-expanded="false" aria-controls="repository-composer-model"><span data-composer-model-label="">Model</span><span id="agent-config-summary">Configure</span><svg class="disclosure-chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4"></path></svg></summary>
+                    <div id="repository-composer-model" class="model-settings-popover composer-popover" popover="auto" role="dialog" aria-label="Model and request settings">
+                      <header><div><strong>Model &amp; request settings</strong><small>Used for this chat and its next messages.</small><small id="agent-catalog-source"></small></div><div class="model-catalog-actions"><button type="button" data-refresh-model-catalog="" aria-label="Refresh models" title="Refresh models from connected CLIs"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 5a5.5 5.5 0 1 0 .3 5M13 1.5V5H9.5"></path></svg></button><button type="button" data-composer-menu-close="" aria-label="Close model settings">×</button></div></header>
+                      <label>Provider<select id="agent-provider" aria-label="AI provider"><option value="">Loading providers…</option></select></label>
+                      <label>Model<select id="agent-model" aria-label="AI model"></select></label>
+                      <small id="agent-model-identity" class="model-catalog-identity" hidden=""></small>
+                      <label class="model-speed-control"><span>Speed</span><select id="agent-speed" aria-label="Processing speed" title="Choose the processing speed for the next request"></select></label>
+                      <label>Reasoning effort<select id="agent-effort" aria-label="Reasoning effort"></select></label>
+                      <small id="agent-model-error" class="hidden" role="status"></small>
+                      <label>Repository access<select id="agent-mode" aria-label="AI access mode"><option value="edit">Edit repository + Git</option><option value="plan">Plan only</option></select></label>
+                    </div>
+                  </details>
+                <button id="queue-agent-prompt" type="button" class="ghost-button queue-prompt-button hidden" title="Queue this prompt to run after the current response">Queue</button>
+                <button id="run-agent" type="button" class="primary-button composer-action-button" aria-label="Send message" title="Send message"><svg class="composer-send-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="m3 9 14-6-6 14-2-6-6-2Z M9 11l8-8"></path></svg><span class="composer-stop-icon" aria-hidden="true"></span></button>
+              </div>
+            </div>
+            </div>
+          </div>
+          </div>
+        </div>
+
+      </section>
+
+      <aside id="repository-version-control-panel" class="git-panel" aria-label="Repository version control">
+        <div class="panel-header">
+          <div><p class="eyebrow">VERSION CONTROL</p><h2 id="git-repo-name">Changes</h2></div>
+          <div class="git-panel-header-actions">
+            <button id="refresh-git" class="icon-button" title="Refresh version control" aria-label="Refresh version control">↻</button>
+            <button id="close-git-panel" class="icon-button" type="button" title="Close version control" aria-label="Close version control">×</button>
+          </div>
+        </div>
+        <div class="branch-bar">
+          <button id="branch-selector" class="branch-selector" title="Switch branch"><svg class="branch-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="5" r="2.25"></circle><circle cx="17.5" cy="6" r="2.25"></circle><circle cx="17.5" cy="18" r="2.25"></circle><path d="M6 7.25v6.5A4.25 4.25 0 0 0 10.25 18h5M8.25 6h5A4.25 4.25 0 0 1 17.5 10.25v5.5"></path></svg><strong id="branch-name">—</strong><svg class="branch-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"></path></svg></button>
+          <button id="copy-branch-button" type="button" title="Copy branch name" aria-label="Copy branch name" disabled=""><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g class="branch-copy-icon"><rect x="8" y="8" width="12" height="13" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></g><path class="branch-copied-icon" d="m5 12 4 4L19 6"></path></svg></button>
+          <span id="branch-copy-status" class="repository-tab-sr-only" role="status" aria-live="polite"></span>
+          <span id="sync-state" class="sync-state"></span>
+          <button id="fetch-button" title="Fetch remote">Fetch</button>
+        </div>
+        <div class="panel-tabs"><button data-git-view="changes" class="active">Changes</button><button data-git-view="history">History</button><button data-git-view="branches">Branches</button><button data-git-view="stashes">Stashes</button></div>
+        <div id="git-changes" class="git-view">
+          <div class="commit-box">
+            <textarea id="commit-message" placeholder="Commit message"></textarea>
+            <button id="commit-button" class="primary-button">Commit staged changes</button>
+            <button id="stash-button" class="stash-create-button" type="button">Stash…</button>
+          </div>
+          <div id="change-selection-toolbar" class="change-selection-toolbar hidden" aria-live="polite">
+            <strong id="change-selection-count">0 selected</strong>
+            <div>
+              <button id="clear-change-selection" type="button">Clear</button>
+              <button id="unstage-selected-files" type="button">Unstage selected</button>
+              <button id="revert-selected-files" type="button" title="Preview and revert the selected file sections, with local recovery copies">Revert selected…</button>
+              <button id="stage-selected-files" type="button" class="primary-button">Stage selected</button>
+            </div>
+          </div>
+          <div id="git-bulk-revert-status" role="status" aria-live="polite" hidden=""></div>
+          <div id="change-list" class="change-list"></div>
+        </div>
+        <div id="git-history" class="git-view hidden"></div>
+        <div id="git-branches" class="git-view hidden"></div>
+        <div id="git-stashes" class="git-view hidden">
+          <div class="stash-toolbar"><span>Recent stashes · local only</span><button id="refresh-stashes" type="button" aria-label="Refresh stashes">↻</button></div>
+          <div id="stash-list"></div>
+        </div>
+        <p id="stash-notice" role="status" aria-live="polite"></p>
+        <div class="push-bar"><button id="pull-button">↓ Pull</button><button id="push-button" class="primary-button">↑ Push</button></div>
+      </aside>
+    </main>
+
+    <section id="daily-planner-panel" class="daily-planner-panel hidden" aria-label="Daily tasks"></section>
+    <section id="diagram-studio-panel" class="diagram-studio-panel hidden" aria-label="Diagram Studio"></section>
+
+    <section id="services-drawer" class="services-drawer hidden">
+      <header>
+        <div><p class="eyebrow">LOCAL RUNTIME</p><h2 id="services-context">Services</h2><span>Run APIs, workers and UIs together with editor-managed environment variables.</span></div>
+        <div class="service-header-actions"><button id="stop-all-services" type="button" disabled="" title="Stop all Argus-managed services; tests, sync jobs and agents are not stopped" aria-label="Stop all running services"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="5" y="5" width="10" height="10" rx="1.5"></rect></svg><span data-stop-all-label="">Stop all</span><span data-stop-all-count="" aria-hidden="true">0</span></button><button id="refresh-services" type="button" class="icon-button refresh-button" title="Refresh services" aria-label="Refresh services">↻</button></div>
+      </header>
+      <p id="services-stop-status" class="services-stop-status" role="status" aria-live="polite" hidden=""></p>
+      <p class="service-order-hint">Drag the grip to arrange services. Your order is saved; moving a card never starts it.</p>
+      <div id="service-order-status" class="visually-hidden" role="status" aria-live="polite"></div>
+      <div id="service-list" class="service-list"></div>
+      <div id="log-console" class="log-console hidden"><header><strong id="log-title">Logs</strong><div class="log-actions"><button id="copy-service-logs" type="button" title="Copy all retained logs for the current process, including output not shown here" disabled="">Copy all logs</button><button id="toggle-log-wrap" type="button">Wrap</button><button id="close-logs" type="button" aria-label="Close logs">×</button></div></header><p id="log-copy-feedback" class="log-copy-feedback hidden" role="status" aria-live="polite"></p><pre id="log-output" tabindex="0"></pre></div>
+    </section>
+
+    <section id="api-client-drawer" class="api-client-drawer hidden">
+      <header>
+        <div class="api-client-title"><p class="eyebrow">ARGUS API CLIENT</p><span>Independent local collections with ready-to-use cURL files.</span></div>
+        <div class="api-client-actions"><button id="open-api-history" type="button" class="ghost-button" aria-controls="api-request-sidebar" aria-expanded="false">History</button><div class="api-environment-picker"><select id="api-environment-select" aria-label="Active API environment"><option value="">No environment</option></select><button id="manage-api-environments" type="button" class="ghost-button">Environments</button></div><button id="refresh-api-client" class="icon-button refresh-button" title="Refresh requests" aria-label="Refresh requests">↻</button><button id="import-api-file" class="ghost-button">↓ Import</button><button id="export-api-file" class="ghost-button">↑ Export</button><button id="new-api-collection" class="ghost-button">＋ Collection</button><button id="import-curl" class="ghost-button">Paste cURL</button><button id="new-api-request" class="primary-button">＋ New request</button></div>
+      </header>
+      <div class="api-client-layout">
+        <aside id="api-request-sidebar" class="api-request-sidebar">
+          <div class="api-sidebar-tabs" role="tablist" aria-label="API requests"><button id="api-saved-tab" type="button" role="tab" aria-selected="true" aria-controls="api-saved-pane" class="active">Saved</button><button id="api-history-tab" type="button" role="tab" aria-selected="false" aria-controls="api-request-history" tabindex="-1">History <span id="api-history-count">0</span></button><button id="close-api-history" type="button" aria-label="Close request history"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M6 6l8 8M14 6l-8 8"></path></svg></button></div>
+          <section id="api-saved-pane" role="tabpanel" aria-labelledby="api-saved-tab">
+            <div class="api-sidebar-heading"><div><strong>Saved requests</strong><small id="api-storage-location">Documents</small></div><button id="open-api-folder" title="Open saved request folder in Finder">↗</button><span id="api-sidebar-count">0</span></div>
+            <div id="api-request-list" class="api-request-list"></div>
+          </section>
+          <section id="api-request-history" class="hidden" role="tabpanel" aria-labelledby="api-history-tab">
+            <div class="api-history-heading"><p>Stored on this Mac. Requests may include sensitive data.</p><label class="visually-hidden" for="api-history-search">Search request history</label><input id="api-history-search" type="search" placeholder="Search history…" autocomplete="off" spellcheck="false"></div>
+            <p id="api-history-status" class="api-history-status" role="status" aria-live="polite"></p>
+            <div id="api-history-list" class="api-history-list"></div>
+          </section>
+        </aside>
+        <div id="api-sidebar-resizer" class="api-sidebar-resizer" title="Drag to resize the request list"></div>
+        <main class="api-request-workbench">
+          <form id="api-request-form">
+            <input name="id" type="hidden">
+            <div class="api-request-meta">
+              <label>Request name<input name="name" required="" placeholder="Get order details"></label>
+              <label>Collection<select name="collectionId" id="api-request-collection"><option value="">Select a collection…</option></select></label>
+            </div>
+            <div class="api-url-bar">
+              <select name="method" aria-label="HTTP method"><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>HEAD</option><option>OPTIONS</option></select>
+              <div class="api-url-input-shell"><div id="api-url-highlight" class="api-url-highlight" aria-hidden="true"></div><input name="url" required="" placeholder="Paste a URL or complete cURL command" title="Pasting cURL automatically fills method, URL, query parameters, headers, and body"></div>
+              <button id="copy-api-curl" type="button" class="ghost-button" title="Copy this request as resolved cURL">Copy cURL</button>
+              <button id="send-api-request" class="primary-button">Send</button>
+            </div>
+            <div class="api-editor-tabs"><button type="button" data-api-editor="query" class="active">Query Params <span id="api-query-count">0</span></button><button type="button" data-api-editor="headers">Headers <span id="api-header-count">0</span></button><button type="button" data-api-editor="body">Body</button></div>
+            <div id="api-query-editor" class="api-editor-pane api-structured-editor" data-parameter-view="table">
+              <div class="api-pane-heading"><span>Query string parameters</span><div class="api-pane-actions"><div class="api-data-view-toggle" aria-label="Query parameter view"><button type="button" data-api-parameter-view="query:table" class="active">Table</button><button type="button" data-api-parameter-view="query:json">JSON</button></div><button type="button" data-add-api-parameter="query">＋ Add parameter</button></div></div>
+              <div id="api-query-parameters" class="api-parameter-list"></div>
+              <textarea name="queryParamsText" class="api-parameter-json hidden" spellcheck="false" placeholder="{&quot;shipment_id&quot;:&quot;h290a45hobxk&quot;,&quot;channel&quot;:&quot;retail&quot;}"></textarea>
+            </div>
+            <div id="api-headers-editor" class="api-editor-pane api-structured-editor hidden" data-parameter-view="table">
+              <div class="api-pane-heading"><span>Request headers</span><div class="api-pane-actions"><div class="api-data-view-toggle" aria-label="Header view"><button type="button" data-api-parameter-view="headers:table" class="active">Table</button><button type="button" data-api-parameter-view="headers:json">JSON</button></div><button type="button" data-add-api-parameter="headers">＋ Add header</button></div></div>
+              <div id="api-header-parameters" class="api-parameter-list"></div>
+              <textarea name="headersText" class="api-parameter-json hidden" spellcheck="false" placeholder="{&quot;Content-Type&quot;:&quot;application/json&quot;,&quot;Authorization&quot;:&quot;Bearer ...&quot;}"></textarea>
+            </div>
+            <div id="api-body-editor" class="api-editor-pane hidden">
+              <div class="api-pane-heading"><span>Raw request body</span><button type="button" data-beautify="body">Beautify JSON</button></div>
+              <textarea name="body" spellcheck="false" placeholder="{&quot;orderId&quot;:&quot;123&quot;}"></textarea>
+            </div>
+            <div class="api-form-actions"><button id="delete-api-request" type="button" class="danger-button hidden">Delete</button><span id="api-request-origin"></span><button id="save-api-request" type="button" class="ghost-button">Save request</button></div>
+          </form>
+          <div id="api-pane-resizer" class="api-pane-resizer" title="Drag to resize request and response"></div>
+          <section class="api-response-panel">
+            <header><div><strong>Response</strong><span id="api-response-status">Not sent</span></div><div id="api-response-meta"></div></header>
+            <div class="api-response-tabs">
+              <button data-api-response="body" class="active">Body</button><button data-api-response="headers">Headers</button>
+              <div class="response-view-actions"><button id="toggle-response-wrap" type="button" class="active">Wrap lines</button><button id="copy-api-response" type="button">Copy</button><button id="beautify-api-response" type="button">Format JSON</button></div>
+            </div>
+            <pre id="api-response-body" tabindex="0">Send the request to see its response here.</pre>
+            <pre id="api-response-headers" class="hidden" tabindex="0"></pre>
+          </section>
+        </main>
+      </div>
+    </section>
+
+    <section id="json-explorer-panel" class="json-explorer-panel hidden" aria-label="JSON Explorer">
+      <header class="json-explorer-header">
+        <div><p class="eyebrow">LOCAL DEVELOPER TOOL</p><h2>JSON Explorer</h2><span>Format, inspect, and search deeply nested JSON without sending data anywhere.</span></div>
+        <div class="json-explorer-header-actions">
+          <span class="json-private-badge">● Local only</span>
+          <button id="json-open-file" type="button" class="ghost-button">Open file</button>
+          <input id="json-file-input" class="hidden" type="file" accept="application/json,.json,.jsonl,.ndjson">
+          <button id="json-paste" type="button" class="ghost-button">Paste</button>
+          <button id="json-clear" type="button" class="ghost-button">Clear</button>
+        </div>
+      </header>
+      <div class="json-explorer-toolbar">
+        <div class="json-view-tabs" role="tablist" aria-label="JSON view"><button type="button" class="active" data-json-view="tree">Tree</button><button type="button" data-json-view="code">Formatted</button></div>
+        <span class="json-toolbar-divider"></span>
+        <button id="json-format" type="button">Format</button><button id="json-minify" type="button">Minify</button>
+        <button id="json-expand-all" type="button">Expand all</button><button id="json-collapse-all" type="button">Collapse all</button>
+        <span class="json-toolbar-spacer"></span>
+        <button id="json-copy" type="button">Copy JSON</button><button id="json-download" type="button">Export</button>
+        <button id="json-open-search" type="button" class="json-search-trigger"><span>⌕</span> Search <kbd>⌘F</kbd></button>
+      </div>
+      <div id="json-search-bar" class="json-search-bar hidden" role="search">
+        <span>⌕</span><input id="json-search-input" type="search" autocomplete="off" spellcheck="false" placeholder="Search every key, value, or JSONPath…">
+        <select id="json-search-scope" aria-label="Search scope"><option value="all">Keys + values</option><option value="keys">Keys only</option><option value="values">Values only</option><option value="paths">JSONPaths</option></select>
+        <strong id="json-search-count">0 results</strong><button id="json-search-previous" type="button" title="Previous match">↑</button><button id="json-search-next" type="button" title="Next match">↓</button><button id="json-close-search" type="button" title="Close search">×</button>
+      </div>
+      <div class="json-explorer-workspace">
+        <section class="json-input-pane">
+          <header><div><strong>JSON input</strong><span id="json-input-name">Unsaved document</span></div><span id="json-validation-state" class="empty">Waiting for JSON</span></header>
+          <textarea id="json-source-input" spellcheck="false" autocomplete="off" placeholder="Paste JSON here, press ⌘V, or open a .json file…"></textarea>
+          <footer><span id="json-error-location"></span><span id="json-document-size">0 B</span></footer>
+        </section>
+        <div class="json-explorer-divider" aria-hidden="true"></div>
+        <section class="json-output-pane">
+          <header><div><strong>Structure</strong><span id="json-document-stats">No document loaded</span></div><code id="json-active-path">$</code></header>
+          <div id="json-tree-view" class="json-tree-view"><div class="json-empty-state"><span>{ }</span><strong>Paste or open JSON to explore it</strong><p>Objects and arrays become collapsible branches. Values remain selectable and copyable.</p></div></div>
+          <pre id="json-code-view" class="json-code-view hidden" tabindex="0"></pre>
+        </section>
+      </div>
+    </section>
+
+    <section id="global-codex-panel" class="global-codex-panel hidden">
+      <header>
+        <div class="global-codex-header-row">
+          <div class="global-codex-heading">
+            <div class="global-codex-title">
+              <button id="nexus-sidebar-toggle" class="nexus-sidebar-toggle" type="button" data-task-panel-toggle="global" aria-expanded="true" aria-controls="global-context-sidebar" aria-label="Hide task history and connected services" title="Hide task history and connected services"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M9 4v16"></path><path class="nexus-sidebar-icon-fill" d="M4 5h4v14H4z" fill="currentColor" stroke="none"></path></svg></button>
+              <h2><span aria-hidden="true">✦</span> Nexus</h2>
+            </div>
+            <button id="nexus-theme-toggle" type="button" popovertarget="nexus-theme-picker" aria-label="Choose Nexus theme" aria-haspopup="dialog" aria-expanded="false" aria-controls="nexus-theme-picker"><span aria-hidden="true">◐</span> <span id="nexus-theme-label">Deep Ocean</span><svg class="disclosure-chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4"></path></svg></button>
+          </div>
+          <section class="global-ai-info" aria-label="Nexus connection details">
+            <p class="global-ai-description">Trace cross-service flows, compare implementations, and coordinate changes. Each repository keeps its private AI context.</p>
+            <div class="global-ai-provider">
+              <div class="global-ai-connection-mark" aria-hidden="true"><span class="status-dot"></span><span>AI</span></div>
+              <div class="global-ai-connection-copy"><small>CONNECTED PROVIDER</small><strong id="global-ai-status">AI connection</strong><span id="global-ai-version">—</span></div>
+            </div>
+            <div class="global-ai-scope"><div><small>WORKSPACE ACCESS</small><strong id="global-ai-repository-scope">All connected repositories</strong></div><span id="global-ai-access-mode" class="edit">Can edit + use Git</span></div>
+          </section>
+        </div>
+      </header>
+      <section id="nexus-theme-picker" popover="auto" role="dialog" aria-labelledby="nexus-theme-title">
+        <div class="nexus-theme-picker-heading"><div><strong id="nexus-theme-title">Nexus themes</strong><p>Quiet surfaces. One accent. Preview instantly.</p></div><button type="button" data-theme-close="" aria-label="Close Nexus themes">×</button></div>
+        <div class="nexus-theme-appearance" role="group" aria-label="App appearance"><span>Appearance</span><button type="button" data-nexus-appearance="light" aria-pressed="false">☀ Light</button><button type="button" data-nexus-appearance="dark" aria-pressed="true">☾ Dark</button></div>
+        <div class="nexus-theme-options" role="group" aria-label="Choose one of six dark Nexus themes"></div>
+        <footer><span data-theme-save-status="" role="status" aria-live="polite">6 dark + 6 light themes. Your choice is remembered separately for each appearance.</span><button type="button" data-theme-retry="" hidden="">Retry save</button></footer>
+      </section>
+      <div id="nexus-workspace-view" class="global-codex-layout">
+        <aside id="global-context-sidebar" aria-label="Nexus task history and connected services">
+          <section class="task-sidebar-inline" aria-labelledby="global-task-history-title"><header><div><small>GLOBAL TASKS</small><strong id="global-task-history-title">Task history</strong></div><div class="task-sidebar-actions"><button id="new-global-task" title="Start a separate global task" aria-label="Start a separate global task">＋</button></div></header><div id="global-task-list" class="task-list"></div></section>
+          <section class="global-services-section" aria-labelledby="global-connected-services-title"><header><div><small>WORKSPACE SCOPE</small><strong id="global-connected-services-title">Connected services</strong></div></header><div id="global-repository-list" class="global-repository-list"></div><p class="global-services-note">Global tasks can inspect every repository listed here. Changes still appear in the Git panel of the repository that owns them.</p></section>
+        </aside>
+        <div id="global-task-resizer" class="task-sidebar-resizer" role="separator" aria-label="Resize global task history"></div>
+        <main>
+          <div id="global-agent-tabs" class="agent-tabs"></div>
+          <div class="chat-scroll-region global-chat-scroll-region">
+          <section id="global-agent-conversation" class="chat-thread global-chat-thread is-empty" aria-live="polite">
+            <div class="chat-empty-state"><p class="eyebrow">ALL CONNECTED REPOSITORIES</p><h1>What are we shipping?</h1><p>Trace a flow, investigate an incident, or coordinate a change across connected services.</p></div>
+          </section>
+          <section id="global-agent-output-card" class="agent-output-card chat-live-response hidden">
+            <article class="chat-message assistant">
+              <span class="chat-avatar"><img src="/assets/argus-logo.svg" alt=""></span>
+              <div class="chat-message-body">
+                <div class="chat-message-meta">Argus<span class="chat-response-status" role="status"><span id="global-agent-status-dot" class="pulse-dot" aria-hidden="true"></span><span id="global-agent-status">Working</span></span></div>
+                <header class="chat-answer-label"><span>Response</span></header>
+                <div id="global-agent-output" class="agent-rendered-output chat-message-content"></div>
+              </div>
+            </article>
+          </section>
+          <div id="global-agent-question-card-host" class="agent-question-host"></div>
+          </div>
+          <div class="chat-navigation-slot"><nav class="chat-navigation" data-chat-navigation="global" aria-label="Nexus chat navigation" hidden="">
+            <div class="chat-checkpoint-stepper" role="group" aria-label="Saved checkpoints"><button type="button" data-chat-nav="previous" aria-label="Previous checkpoint" title="Previous checkpoint" disabled="">↑</button><span class="chat-checkpoint-count" data-chat-checkpoint-count="" title="Mark a saved message to add a checkpoint">0</span><button type="button" data-chat-nav="next" aria-label="Next checkpoint" title="Next checkpoint" disabled="">↓</button></div>
+            <button type="button" class="chat-jump-bottom" data-chat-nav="bottom" aria-label="Scroll to bottom" title="Scroll to bottom" disabled=""><span aria-hidden="true">↓</span><span>Latest</span></button>
+            <span class="chat-navigation-status" data-chat-checkpoint-status="" role="status" aria-live="polite"></span>
+          </nav></div>
+          <div class="global-prompt-card chat-composer compact-composer" data-composer-scope="global">
+            <textarea id="global-agent-prompt" placeholder="For example: Trace the order-cancellation flow across the BFF, CRM, ticketing and payment services. Find where this Grafana error originates…"></textarea>
+            <div id="global-context-tray" class="context-tray"><div class="context-chips"></div></div>
+            <footer class="composer-toolbar">
+              <details class="composer-menu composer-context-menu">
+                <summary class="composer-context-toggle" aria-label="Attachments and context" aria-haspopup="dialog" aria-expanded="false" aria-controls="global-composer-context"><svg class="composer-context-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"></path></svg><span class="composer-context-label">Context</span><span data-composer-context-count="" hidden=""></span></summary>
+                <div id="global-composer-context" popover="auto" class="composer-popover composer-context-popover" role="dialog" aria-label="Attachments and context">
+                  <header><strong>Attachments &amp; context</strong><button type="button" data-composer-menu-close="" aria-label="Close context menu">×</button></header>
+              <input id="global-file-input" class="hidden" type="file" multiple="">
+              <div class="composer-attachment-actions">
+              <button type="button" class="attach-browser-button" data-attach-file="global" title="Attach files from this Mac"><span>＋</span> File</button>
+              <button type="button" class="attach-browser-button" data-attach-browser="global" title="Attach the latest tab shared by the Argus Chrome extension"><span>◉</span> Chrome tab</button>
+              </div>
+              <label class="context-mode-control" title="Include relevant previous chat context by default, prioritizing selected repositories. Choose Fresh request to skip history lookup."><span>History</span><select id="global-agent-context-mode" aria-label="Previous Nexus chat context"><option value="fresh">Fresh request</option><option value="history" selected="">Include previous chat context</option></select></label>
+              <div id="global-task-notes" class="task-notes-bar" aria-label="Notes for this Nexus task"></div>
+              <div id="nexus-repository-picker-root"></div>
+                </div>
+              </details>
+                <details class="composer-menu model-settings-menu composer-model-menu">
+                  <summary aria-label="Model and request settings" aria-haspopup="dialog" aria-expanded="false" aria-controls="global-composer-model"><span data-composer-model-label="">Model</span><span id="global-agent-config-summary">Configure</span><svg class="disclosure-chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4"></path></svg></summary>
+                  <div id="global-composer-model" class="model-settings-popover composer-popover" popover="auto" role="dialog" aria-label="Model and request settings">
+                    <header><div><strong>Model &amp; request settings</strong><small>Used for this Nexus chat and its next messages.</small><small id="global-agent-catalog-source"></small></div><div class="model-catalog-actions"><button type="button" data-refresh-model-catalog="" aria-label="Refresh Nexus models" title="Refresh models from connected CLIs"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 5a5.5 5.5 0 1 0 .3 5M13 1.5V5H9.5"></path></svg></button><button type="button" data-composer-menu-close="" aria-label="Close model settings">×</button></div></header>
+                    <label>Provider<select id="global-agent-provider" aria-label="Nexus AI provider"><option value="">Loading providers…</option></select></label>
+                    <label>Model<select id="global-agent-model" aria-label="Nexus AI model"></select></label>
+                    <small id="global-agent-model-identity" class="model-catalog-identity" hidden=""></small>
+                    <label class="model-speed-control"><span>Speed</span><select id="global-agent-speed" aria-label="Global processing speed" title="Choose the processing speed for the next request"></select></label>
+                    <label>Reasoning effort<select id="global-agent-effort" aria-label="Global reasoning effort"></select></label>
+                    <small id="global-agent-model-error" class="hidden" role="status"></small>
+                    <input id="global-agent-mode" type="hidden" value="edit">
+                  </div>
+                </details>
+              <button id="queue-global-agent-prompt" type="button" class="ghost-button queue-prompt-button hidden" title="Queue this prompt to run after the current response">Queue</button>
+              <button id="run-global-agent" type="button" class="primary-button composer-action-button" aria-label="Send message" title="Send message"><svg class="composer-send-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="m3 9 14-6-6 14-2-6-6-2Z M9 11l8-8"></path></svg><span class="composer-stop-icon" aria-hidden="true"></span></button>
+            </footer>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    
+  </div>
+
+  
+
+
+
+  
+
+  <dialog id="project-structure-dialog" class="project-structure-dialog" aria-labelledby="project-structure-title" aria-describedby="project-structure-subtitle">
+    <div class="dialog-card project-structure-card">
+      <header class="project-structure-heading">
+        <div><p id="project-type-eyebrow" class="eyebrow">PROJECT</p><h2 id="project-structure-title"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="3" width="8" height="5" rx="1.2"></rect><rect x="2" y="16" width="8" height="5" rx="1.2"></rect><rect x="14" y="16" width="8" height="5" rx="1.2"></rect><path d="M12 8v4M6 16v-4h12v4"></path></svg>Project Structure</h2><p id="project-structure-subtitle">Inspecting the active repository…</p></div>
+        <div><button id="refresh-project-structure" type="button" class="icon-button refresh-button" aria-label="Refresh project structure">↻</button><button type="button" class="command-close" data-close-dialog="project-structure-dialog" aria-label="Close">×</button></div>
+      </header>
+      <div class="project-structure-layout">
+        <nav class="project-structure-nav" aria-label="Project settings">
+          <small>PROJECT SETTINGS</small>
+          <button type="button" class="active" data-project-section="project">Project</button>
+          <button type="button" data-project-section="modules">Modules <span id="project-module-count">0</span></button>
+          <small id="project-platform-label">PLATFORM SETTINGS</small>
+          <button type="button" data-project-section="sdks"><strong id="project-runtime-label">Runtime</strong> <span id="project-sdk-count">0</span></button>
+          <button type="button" data-project-section="build">Build</button>
+        </nav>
+        <main class="project-structure-content">
+          <div id="project-structure-loading" class="project-structure-loading"><span></span><div><strong>Reading project model</strong><small>Detecting runtime, modules and build files…</small></div></div>
+          <section data-project-pane="project" class="project-structure-pane hidden"></section>
+          <section data-project-pane="modules" class="project-structure-pane hidden"></section>
+          <section data-project-pane="sdks" class="project-structure-pane hidden"></section>
+          <section data-project-pane="build" class="project-structure-pane hidden"></section>
+        </main>
+      </div>
+      <footer class="project-structure-actions"><span id="project-structure-status">Changes apply to future starts and restarts.</span><button type="button" data-close-dialog="project-structure-dialog">Cancel</button><button id="save-project-structure" type="button" class="primary-button">Apply</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="repo-dialog">
+    <form method="dialog" class="dialog-card repo-onboarding-card" id="repo-form">
+      <header class="repo-onboarding-heading">
+        <div><p class="eyebrow">ONBOARD REPOSITORIES</p><h2>Add repositories</h2><p>Choose repositories already on this Mac, or clone one from a remote Git URL.</p></div>
+        <button class="command-close" type="button" data-close-dialog="repo-dialog" aria-label="Close repository onboarding"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.25 2.25 9.75 9.75M9.75 2.25 2.25 9.75"></path></svg></button>
+      </header>
+      <div class="repo-onboarding-scroll">
+      <div class="repo-onboarding-methods" role="tablist" aria-label="Repository source">
+        <button type="button" class="active" data-onboarding-mode="local" role="tab" aria-selected="true">On this Mac</button>
+        <button type="button" data-onboarding-mode="clone" role="tab" aria-selected="false">Clone from Git</button>
+      </div>
+      <details class="repo-prerequisites">
+        <summary>Git requirements &amp; setup</summary>
+        <div class="repo-prerequisite-check"><span id="onboarding-prerequisites-status" role="status">Checking Git availability…</span><button id="onboarding-prerequisites-refresh" type="button">Check again</button></div>
+        <ul>
+          <li>Git 2.31 or newer must be available to Argus. Finish any macOS developer-tools installation or licence prompts in Terminal first.</li>
+          <li>Local folders must be Git checkouts with an initial commit. Empty or broken repositories are skipped; other selected repositories can still be added.</li>
+          <li>For cloning, use the actual clone URL and an existing writable destination with enough free space. Do not paste <code>git clone</code>, passwords or tokens.</li>
+          <li>Private HTTPS repositories need saved Git credentials. SSH needs an authorized key available to your agent, a verified host key, and network/VPN access. Complete sign-in in Terminal first: cloning cannot prompt for credentials.</li>
+          <li>Git remote API sign-in is separate from Git authentication. Submodules, Git LFS, project SDKs, package-registry access and environment values may require separate setup.</li>
+        </ul>
+      </details>
+      <section id="repo-local-source" class="repo-onboarding-source">
+        <button type="button" id="choose-repo-folder" class="finder-button"><span>📁</span><div><strong>Choose repositories or parent folder</strong><small id="chosen-repo-path">No folders selected</small></div></button>
+      </section>
+      <section id="repo-clone-source" class="repo-onboarding-source hidden">
+        <label class="repo-clone-field"><span>Repository URL</span><input id="repo-clone-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" aria-describedby="repo-clone-auth-help" placeholder="https://bitbucket.org/workspace/repository.git"></label>
+        <p id="repo-clone-auth-help" class="repo-clone-status">Uses your Mac’s saved Git credentials. If Git remote HTTPS sign-in fails, Argus retries the same repository once using your existing SSH setup. Never paste passwords or tokens into the URL.</p>
+        <button type="button" id="choose-clone-destination" class="finder-button"><span>📂</span><div><strong>Choose destination folder</strong><small id="clone-destination-path">No destination selected</small></div></button>
+        <button type="button" id="clone-repository" class="repo-clone-button" aria-busy="false" aria-describedby="clone-repository-status" disabled="">Clone repository</button>
+        <p id="clone-repository-status" class="repo-clone-status" aria-live="polite"></p>
+      </section>
+      <input id="repo-path" type="hidden">
+      <input id="clone-destination" type="hidden">
+      <div id="clone-job-history" class="clone-job-history hidden" aria-live="polite"></div>
+      <div id="repo-production-branches" class="repo-production-branches hidden"></div>
+      <div class="repo-onboarding-note"><span>↗</span><p><strong>Your AI kit, on your schedule</strong><small>Connecting a repository does not start AI generation. Use AI kit in the repository view to start, pause, resume or restart.</small></p></div>
+      </div>
+      <div class="dialog-actions"><button type="button" data-close-dialog="repo-dialog">Cancel</button><button id="confirm-repo" class="primary-button" disabled="">Start onboarding</button></div>
+    </form>
+  </dialog>
+  <dialog id="repo-group-dialog" class="repo-group-dialog">
+    <form method="dialog" class="dialog-card repo-group-card" id="repo-group-form">
+      <div class="repo-group-dialog-header">
+        <div><p class="eyebrow">REPOSITORY TABS</p><h2 id="repo-group-title">Create tab group</h2><p>Keep related repositories together and collapse them when you need more room.</p></div>
+        <button class="dialog-close icon-button" type="button" data-close-dialog="repo-group-dialog" aria-label="Close">×</button>
+      </div>
+      <div class="repo-group-switcher"><div id="repo-group-list" aria-label="Tab groups"></div><button id="new-repo-group" type="button">＋ New group</button></div>
+      <label>Group name<input id="repo-group-name" maxlength="40" placeholder="For example: Post Order" required=""></label>
+      <fieldset class="repo-group-colors"><legend>Color</legend><div id="repo-group-colors"></div></fieldset>
+      <div class="repo-group-members" role="group" aria-labelledby="repo-group-members-label"><span id="repo-group-members-label">Repositories</span><div id="repo-group-members"></div></div>
+      <div class="repo-group-actions">
+        <button id="delete-repo-group" class="danger-button hidden" type="button">Delete group</button>
+        <span></span>
+        <div class="repo-group-submit-actions">
+          <button type="button" data-close-dialog="repo-group-dialog">Cancel</button>
+          <button class="primary-button" type="submit">Save group</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="backup-dialog">
+    <div class="dialog-card backup-card">
+      <header class="backup-heading"><div><p class="eyebrow">ENCRYPTED LATEST-ONLY BACKUP</p><h2>Save Argus Changes</h2><p>Argus replaces the previous Drive snapshot and rewrites the dedicated Git remote <code>main</code> branch to one latest backup commit.</p></div><button type="button" class="command-close" data-close-dialog="backup-dialog" aria-label="Close backup">×</button></header>
+      <div class="backup-scroll-region">
+        <div class="backup-security-note"><span>⌾</span><div><strong>Your private data stays encrypted</strong><small>Environment values, task context, attachments, and API collections are packed locally and encrypted with AES-256-GCM before they leave this Mac. Keep the recovery passphrase safe—Argus cannot recover it for you.</small></div></div>
+        <div id="backup-loading-status" class="backup-loading-status" role="status" aria-live="polite" aria-atomic="true"><span id="backup-loading-spinner" class="backup-loading-spinner" aria-hidden="true"></span><div><strong id="backup-loading-title">Loading backup settings…</strong><small id="backup-loading-detail">Checking your saved repository, Keychain passphrase, and Google Drive folder.</small></div><button id="retry-backup-status" type="button" class="hidden" disabled="">Retry</button></div>
+        <div id="backup-settings-fields" class="backup-destinations" aria-busy="true">
+          <label id="backup-git-destination"><span>Your backup repository <em id="backup-repository-requirement" class="field-requirement">Checking…</em></span><input id="backup-repository-url" type="text" value="" placeholder="Loading backup repository…" spellcheck="false" autocomplete="off" readonly="" aria-readonly="true" required="" aria-required="true" aria-describedby="backup-repository-help backup-repository-warning"><small id="backup-repository-help" aria-live="polite">Checking the saved backup repository and its last access check…</small><small id="backup-repository-warning">Use a separate backup repository, not your working source repository. Saving replaces its main branch history with one latest snapshot. This destination is your local setting; it is not bundled with Argus.</small></label>
+          <label><span>Recovery passphrase <em id="backup-passphrase-requirement" class="field-requirement">Checking…</em></span><input id="backup-passphrase" type="password" minlength="12" autocomplete="new-password" placeholder="Checking saved passphrase…" disabled="" aria-required="false"><small id="backup-passphrase-help" aria-live="polite">Checking whether a recovery passphrase is saved in this Mac’s Keychain…</small></label>
+          <div class="backup-drive-field"><span>Google Drive folder <em id="backup-drive-requirement" class="field-requirement">Checking…</em></span><button id="choose-backup-folder" type="button" class="finder-button" disabled=""><span>△</span><div><strong id="backup-drive-label">Checking Google Drive folder…</strong><small id="backup-drive-directory">Loading folder…</small></div></button><small id="backup-drive-help">Checking the saved folder and Google Drive for Desktop…</small></div>
+        </div>
+        <section class="backup-preview"><header><div><strong>Changes waiting to be saved</strong><small id="backup-change-count">Checking…</small></div><span class="backup-preview-actions"><button id="toggle-backup-preview" type="button" aria-expanded="false">Expand</button><button id="refresh-backup-status" type="button" class="icon-button refresh-button" aria-label="Refresh backup status">↻</button></span></header><pre id="backup-diff-summary" tabindex="0">Loading local Git changes…</pre></section>
+        <div id="backup-last-result" class="backup-result hidden"></div>
+      </div>
+      <div class="backup-actions"><button id="restore-argus-backup" type="button" class="ghost-button" disabled="">Restore latest backup</button><span></span><button type="button" data-close-dialog="backup-dialog">Cancel</button><button id="save-argus-backup" type="button" class="primary-button" disabled="">Save Argus Changes</button></div>
+    </div>
+  </dialog>
+
+  <dialog id="backup-confirm-dialog" class="backup-confirm-dialog">
+    <div class="dialog-card backup-confirm-card">
+      <header class="backup-confirm-heading"><div><p class="eyebrow">REVIEW BEFORE SAVING</p><h2>Confirm encrypted backup</h2><p>No data leaves this Mac until you confirm.</p></div><button type="button" class="command-close" data-close-dialog="backup-confirm-dialog" aria-label="Close confirmation">×</button></header>
+      <section class="backup-confirm-destinations" aria-label="Backup destinations">
+        <div><span>LOCAL ENCRYPTED COPY</span><strong id="backup-confirm-local">Loading…</strong></div>
+        <div><span>GOOGLE DRIVE MIRROR</span><strong id="backup-confirm-drive">Not configured</strong></div>
+        
+      </section>
+      <section class="backup-confirm-plan"><div class="backup-confirm-plan-heading"><strong>Steps Argus will perform</strong><small>Source stays readable; private editor data stays encrypted.</small></div><ol>
+        <li data-backup-step="code"><i>1</i><div><strong>Synchronize the readable Argus codebase</strong><small id="backup-confirm-code-step">Copy the packaged frontend, backend, desktop, extension, tests, scripts, and documentation into the Git remote working copy.</small></div><em>Ready</em></li>
+        <li data-backup-step="collect"><i>2</i><div><strong>Collect all Argus-managed private data</strong><small>SQLite chat-memory summaries and optional vectors, workspace metadata, chats, agents, private AI kits, environments, attachments, API collections, and selected Keychain environment bundles. Repository code vectors do not exist. CLI authentication, Keychain master material, caches, and other repositories are explicitly excluded.</small></div><em>Ready</em></li>
+        <li data-backup-step="encrypt"><i>3</i><div><strong>Pack and encrypt private data locally</strong><small>Create a temporary archive, derive a key with scrypt, and encrypt it using AES-256-GCM.</small></div><em>Ready</em></li>
+        <li data-backup-step="local"><i>4</i><div><strong>Write the local encrypted copy</strong><small id="backup-confirm-local-step">Store the ciphertext and manifest in the dedicated backup folder.</small></div><em>Ready</em></li>
+        <li data-backup-step="drive"><i>5</i><div><strong>Replace the Google Drive snapshot</strong><small id="backup-confirm-drive-step">After Git remote succeeds, Argus atomically replaces the prior Drive folder with the one latest payload.</small></div><em>Ready</em></li>
+        <li data-backup-step="git"><i>6</i><div><strong>Replace Git remote main with one latest commit</strong><small>Argus force-updates the dedicated backup branch so prior encrypted application states are not retained in branch history. Git remote may still retain provider-side audit or garbage-collection records outside Argus's control.</small></div><em>Ready</em></li>
+      </ol></section>
+      <div id="backup-confirm-result" class="backup-confirm-result hidden" role="status" aria-live="polite"></div>
+      <footer class="backup-confirm-actions"><button id="backup-confirm-back" type="button">Back</button><span></span><button id="backup-confirm-submit" type="button" class="primary-button">Encrypt &amp; save</button><button id="backup-confirm-done" type="button" class="primary-button hidden">Done</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="data-storage-dialog" class="data-storage-dialog">
+    <div class="dialog-card data-storage-card">
+      <header class="data-storage-heading">
+        <div><p class="eyebrow">LOCAL DATA MAP</p><h2>Your local data</h2><p>See what is saved and where it lives.</p></div>
+        <button type="button" class="command-close" data-close-dialog="data-storage-dialog" aria-label="Close data and privacy">×</button>
+      </header>
+      
+      
+      <section id="local-storage-panel" class="local-storage-panel" role="tabpanel" aria-label="Storage and privacy"="">
+      <div class="data-storage-trust-row" aria-label="Argus storage summary">
+        <span><i>▦</i><strong id="data-storage-total">Calculating…</strong><small>Argus-managed disk usage</small></span>
+        
+        <span><i>⌂</i><strong>Local-first</strong><small>Your Mac is the source of truth</small></span>
+        <span><i>—</i><strong>No analytics</strong><small>No Argus telemetry pipeline</small></span>
+      </div>
+      <div class="data-storage-scroll">
+        <section class="data-storage-section">
+          <div class="data-storage-section-heading"><div><small>ON THIS MAC</small><h3>Persistent data</h3></div><span id="data-storage-root">Loading local paths…</span></div>
+          <div id="data-storage-list" class="data-storage-list"><div class="storage-loading">Reading Argus storage locations…</div></div>
+        </section>
+        <section class="data-storage-section storage-egress-section">
+          <div class="data-storage-section-heading"><div><small>YOUR ACTION CONTROLS IT</small><h3>When data can leave this Mac</h3></div><span>Never silently</span></div>
+          <div class="storage-egress-grid">
+            <article><b>Coding CLI requests</b><p>Your prompt, private AI-kit instructions, selected attachments, and—only when enabled—the saved messages in this chat are sent to the coding-agent CLI you choose. Argus does not support hosted answer-provider APIs or copy CLI credentials.</p></article>
+            <article><b>Git remotes</b><p>Repository data reaches the configured Git remote only when you fetch, pull, push, or run an AI-approved Git action.</p></article>
+            <article><b>API Client</b><p>URLs, headers, query values, and bodies are sent only to the destination shown in the request when you press <strong>Send</strong>.</p></article>
+            <article><b>Permission-aware backup</b><p>Private workspace data is encrypted locally. Drive receives no source code unless the same save first completes a successful Git remote push.</p></article>
+          </div>
+        </section>
+        <section class="storage-memory-note"><span>◌</span><div><strong>Not persisted by Argus</strong><p>Live service logs, terminal output, current API responses, running process state, and transient agent-job output remain in memory and disappear when their session ends. Connected source repositories stay in their original folders—Argus stores references to them, not copies.</p></div></section>
+        <section class="storage-repositories-section">
+          <details><summary><span>Connected repository locations</span><em id="storage-repository-count">0</em></summary><div id="storage-repository-list"></div></details>
+        </section>
+        <section class="storage-lifecycle-section">
+          <details><summary><span>Deletion, uninstall, and remote-copy behavior</span><em>Important</em></summary><div class="storage-lifecycle-content">
+            <p><strong>Offboarding a repository</strong><span>disconnects it from active tabs and Services and stops its running work. All saved data stays on disk: Nexus and repository chats, session references, chat memories, attachments, private AI kits, API collections, environments and settings. The source repository and its Git work remain untouched. Reconnect the same folder to use its saved setup again.</span></p>
+            <p><strong>Deleting an API request or folder</strong><span>removes that item from Argus's local API collection files. Deleting a parent removes its saved children too.</span></p>
+            <p><strong>Uninstalling Argus</strong><span>does not automatically erase Application Support data, API collections in Documents, the backup working copy, or Keychain entries. Remove those locations explicitly if you want a complete local wipe.</span></p>
+            <p><strong>Git remote and Google Drive backups</strong><span>contain only the latest snapshot. Every save atomically replaces Drive and force-updates the dedicated Git remote main branch to one latest commit; provider-side audit or garbage-collection records can remain outside Argus's control.</span></p>
+          </div></details>
+        </section>
+      </div>
+      <footer class="data-storage-actions"><p><strong>Fresh reset:</strong> erases every Argus-managed local record, connected-repository reference, chat memory/model, AI kit, API collection, Keychain secret, and configured backup copy. Your Git repositories and CLI-owned login remain untouched.</p><div><button id="reset-all-argus-data" type="button" class="danger-button">Erase all &amp; start fresh</button><button type="button" class="primary-button" data-close-dialog="data-storage-dialog">Done</button></div></footer>
+      </section>
+    </div>
+  </dialog>
+
+  <dialog id="manage-repositories-dialog" class="repository-manager-dialog" aria-labelledby="repository-manager-title">
+    <div class="dialog-card repository-manager-card">
+      <header><div><p class="eyebrow">TAB TOOLS</p><h2 id="repository-manager-title">Manage repositories</h2><p>Open a connected repository or manage its place in Argus.</p></div><button type="button" class="command-close" data-close-dialog="manage-repositories-dialog" aria-label="Close repository manager">×</button></header>
+      <label class="repository-manager-search"><span>Find a repository</span><input id="repository-manager-search" type="search" placeholder="Search name, folder or tab group" autocomplete="off"></label>
+      <div id="repository-manager-list" class="repository-manager-list"></div>
+      <footer class="dialog-actions"><button id="repo-offboard" type="button">Offboard repositories…</button><button type="button" class="primary-button" data-close-dialog="manage-repositories-dialog">Done</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="close-repo-dialog" class="offboard-dialog">
+    <form method="dialog" class="dialog-card offboard-card" id="close-repo-form">
+      <header><div><p class="eyebrow">REPOSITORY OFFBOARDING</p><h2>Disconnect repositories</h2><p>Remove them from active tabs and Services. Keep all saved data.</p></div><button type="button" class="command-close" data-close-dialog="close-repo-dialog" aria-label="Close">×</button></header>
+      <div class="offboard-scroll-region">
+        <div class="offboard-warning"><span>i</span><div><strong>Your chats and saved data stay safe</strong><small>Nexus chats remain available. Repository chats, session references, attachments, AI kits, API collections, environments and settings are retained. Running work for these repositories will stop. Nothing is erased from your repositories or backups.</small></div></div>
+        <fieldset><legend>Select repositories to offboard</legend><div id="offboard-repository-list" class="offboard-repository-list"></div></fieldset>
+        <label class="offboard-confirmation"><span>Type <code>offboard</code> to confirm</span><input id="offboard-confirmation" name="confirmation" autocomplete="off" spellcheck="false" placeholder="offboard"></label>
+      </div>
+      <div class="dialog-actions"><button type="button" data-close-dialog="close-repo-dialog">Cancel</button><button id="confirm-offboard" class="primary-button" disabled="">Disconnect &amp; keep data</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="ai-connections-dialog">
+    <div class="dialog-card ai-connections-card">
+      <header class="ai-connections-heading">
+        <div><p class="eyebrow">CODING AGENT CLIS</p><h2>AI Connections</h2><p>Argus connects to authenticated coding-agent CLIs such as Codex and Claude Code. The CLI owns its account, model access, and credentials.</p></div>
+        <button type="button" class="command-close" data-close-dialog="ai-connections-dialog" aria-label="Close AI connections" title="Close">×</button>
+      </header>
+      <div id="ai-connection-list" class="ai-connection-list"></div>
+      <div class="ai-identity-notice"><span>i</span><div><strong>Account status, without a test AI prompt</strong><small>Refresh checks CLI sign-in and available usage metadata. Green means the account reports capacity or a recent request succeeded; it does not guarantee access to every model. Unknown or model-specific limits stay amber and allow retry. Old quota errors never permanently lock your chats.</small></div></div>
+      <section class="browser-pairing-card">
+        <div class="browser-pairing-copy"><span id="browser-pairing-dot"></span><div><strong>Chrome extension</strong><small id="browser-pairing-status">Checking secure pairing…</small></div></div>
+        <div id="browser-pairing-code" class="browser-pairing-code hidden"><small>ONE-TIME CODE</small><code>------</code><span>Expires in 5 minutes</span></div>
+        <button type="button" id="start-browser-pairing" class="ghost-button">Pair extension</button>
+      </section>
+      <div class="dialog-actions"><p class="ai-auto-detection-note">Coding CLIs are detected automatically from this Mac. Install and sign in through the CLI itself, then detect again here.</p><button type="button" id="refresh-ai-connections"><span class="refresh-glyph">↻</span> Detect again</button><button type="button" class="primary-button" data-close-dialog="ai-connections-dialog">Done</button></div>
+    </div>
+  </dialog>
+
+  <dialog id="branch-dialog">
+    <form method="dialog" class="dialog-card branch-dialog-card" id="branch-form">
+      <p class="eyebrow">GIT BRANCH</p><h2 id="branch-dialog-title">Switch branch</h2>
+      <p id="branch-dialog-context">Choose a branch for the active repository.</p>
+      <div id="dirty-branch-warning" class="branch-warning hidden"><span>!</span><div><strong>Uncommitted changes detected</strong><small>Git will preserve compatible changes. If switching would overwrite work, Git will block the operation.</small></div></div>
+      <div class="branch-mode-tabs"><button type="button" class="active" data-branch-mode="switch">Switch existing</button><button type="button" data-branch-mode="create">Create new branch</button></div>
+      <div id="create-branch-fields" class="create-branch-fields hidden">
+        <label><span>From branch</span><input name="createStartPoint" id="create-branch-start" list="create-branch-options" autocomplete="off" spellcheck="false" placeholder="Search branches…" aria-label="Branch to create from"><datalist id="create-branch-options"></datalist></label>
+        <span class="branch-direction" aria-hidden="true">→</span>
+        <label><span>To branch</span><input name="newBranch" autocomplete="off" spellcheck="false" placeholder="feature/my-change"></label>
+      </div>
+      <div id="switch-branch-fields">
+        <div class="branch-search"><span>⌕</span><input id="branch-search-input" placeholder="Search local and remote branches"></div>
+        <div id="branch-picker-list" class="branch-picker-list"></div>
+        <p id="branch-picker-status" class="branch-picker-status" role="status" hidden=""></p>
+      </div>
+      <input name="branch" type="hidden"><input name="operation" type="hidden" value="switch">
+      <div class="dialog-actions"><button type="button" data-close-dialog="branch-dialog">Cancel</button><button id="confirm-branch-switch" class="primary-button" disabled="">Switch branch</button></div>
+    </form>
+  </dialog>
+
+  
+
+  
+
+  <dialog id="service-dialog">
+    <form method="dialog" class="dialog-card service-setup-card" id="service-form">
+      <div class="service-setup-scroll">
+        <p class="eyebrow">LOCAL SERVICE SETUP</p><h2 id="service-setup-title">Configure service</h2>
+        <p id="service-setup-description">Argus detects how this repository runs. You only manage its local environment and application.yml.</p>
+        <input name="configurationId" type="hidden"><input name="repositoryId" type="hidden">
+        <section class="service-command-section" aria-label="Launch configuration">
+          <label class="service-launch-mode">Launch command<select name="launchMode"><option value="detected">Automatic detection</option><option value="custom">Custom command</option></select></label>
+          <p id="service-detection-note" role="status"></p>
+          <div id="service-command-fields" class="service-command-fields" hidden="">
+            <label>Name<input name="commandName" placeholder="Local service"></label>
+            <label>Executable<input name="commandExecutable" spellcheck="false" placeholder="python3, dotnet, ./gradlew or an absolute path"></label>
+            <label class="service-command-args">Arguments · JSON array<textarea name="commandArguments" spellcheck="false" rows="2" placeholder="[&quot;app.py&quot;]">[]</textarea></label>
+            <label>Working directory · inside this repository<input name="commandCwd" spellcheck="false" value="." placeholder="."></label>
+            <label>Local port · optional<input name="commandPort" type="number" min="1" max="65535" step="1" placeholder="Not a web service"></label>
+            <small>The executable receives these arguments directly. Environment variables go below. Custom run commands do not imply debugger support for every language.</small>
+          </div>
+        </section>
+        <div class="environment-source-tabs"><button type="button" data-environment-format="dotenv" class="active">Paste .env</button><button type="button" data-environment-format="vault">Paste Vault JSON</button><input name="environmentFormat" type="hidden" value="dotenv"></div>
+        <label class="environment-paste-field"><span id="environment-input-label">.env values</span><textarea name="environmentInput" spellcheck="false" placeholder="SPRING_PROFILES_ACTIVE=local
+DATABASE_URL=...
+API_TOKEN=..."></textarea></label>
+        <div id="local-environment-status" class="keychain-note"><span>⌾</span><div><strong>No local environment saved yet</strong><small>Pasting values creates a private .env snapshot outside the repository.</small></div></div>
+        <section id="application-yaml-section" class="application-yaml-section">
+          <div class="yaml-editor-heading"><div><strong>application.yml</strong><small>Edit ports, profiles, management settings, or any other local configuration.</small></div><input name="configFile" aria-label="Application YAML path"></div>
+          <textarea class="application-yaml-editor" name="applicationYaml" spellcheck="false"></textarea>
+          <div class="yaml-change-note"><span>i</span><small>Changes to application.yml are written to this repository and will appear in Git. The local .env snapshot stays outside Git.</small></div>
+        </section>
+      </div>
+      <div class="dialog-actions"><button type="button" data-close-dialog="service-dialog">Cancel</button><button id="save-service" class="primary-button">Save configuration</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="curl-dialog">
+    <form method="dialog" class="dialog-card wide" id="curl-form">
+      <p class="eyebrow">IMPORT REQUEST</p><h2>Paste a cURL command</h2>
+      <p>Argus parses the command locally and prepares the request. It never executes the pasted text as a shell command.</p>
+      <label class="environment-paste-field">cURL<textarea name="curl" required="" spellcheck="false" placeholder="curl --request POST 'http://localhost:8080/api/v1/orders' \\
+  --header 'Content-Type: application/json' \\
+  --data '{&quot;itemId&quot;:&quot;123&quot;}'"></textarea></label>
+      <label>Collection (optional while preparing)<select name="collectionId" id="curl-request-collection"><option value="">Prepare without saving</option></select></label>
+      <div class="dialog-actions"><button type="button" data-close-dialog="curl-dialog">Cancel</button><button class="primary-button">Import and prepare</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="api-collection-dialog">
+    <form method="dialog" class="dialog-card" id="api-collection-form">
+      <p class="eyebrow">API CLIENT</p><h2>Create a collection</h2>
+      <p>Collections keep related requests together and are preserved when you import or export JSON.</p>
+      <label>Collection name<input name="name" required="" maxlength="120" placeholder="Order cancellation"></label>
+      <div class="dialog-actions"><button type="button" data-close-dialog="api-collection-dialog">Cancel</button><button class="primary-button">Create collection</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="api-environment-dialog">
+    <div class="dialog-card api-environment-card">
+      <header class="api-environment-heading"><div><p class="eyebrow">API CLIENT</p><h2>Environments</h2><p>Switch base URLs and variables across Local, QA, Production, or any environment you create.</p></div><button type="button" class="command-close" data-close-dialog="api-environment-dialog" aria-label="Close environments">×</button></header>
+      <div class="api-environment-layout">
+        <aside>
+          <div class="api-environment-sidebar-actions"><button id="new-api-environment" type="button">＋ New</button><button id="import-api-environment" type="button">↓ Import</button></div>
+          <div id="api-environment-list" class="api-environment-list"></div>
+        </aside>
+        <form id="api-environment-form">
+          <input name="id" type="hidden">
+          <label>Environment name<input name="name" required="" maxlength="120" placeholder="QA"></label>
+          <label class="api-environment-values">Variables<textarea name="valuesText" spellcheck="false" placeholder="service_url=api.qa.example.com
+api_key=replace-me"></textarea></label>
+          <small class="api-environment-help">Use the exact variable name in requests, for example <code>{{service_url}}/orders</code>. Argus supplies HTTP/HTTPS when the value has no protocol.</small>
+          <div class="api-environment-form-actions"><button id="delete-api-environment" type="button" class="danger-button hidden">Delete</button><button id="export-api-environment" type="button" class="ghost-button hidden">Export</button><span></span><button type="button" data-close-dialog="api-environment-dialog">Cancel</button><button class="primary-button">Save environment</button></div>
+        </form>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="unsupported-context-dialog" class="unsupported-context-dialog">
+    <div class="dialog-card unsupported-context-card">
+      <header><div><p class="eyebrow">PROVIDER CAPABILITY</p><h2>This context cannot be attached</h2><p id="unsupported-context-summary"></p></div><button type="button" class="command-close" data-close-dialog="unsupported-context-dialog" aria-label="Close">×</button></header>
+      <div class="unsupported-context-note"><span>i</span><div><strong id="unsupported-context-provider"></strong><small id="unsupported-context-detail"></small></div></div>
+      <footer><button type="button" data-close-dialog="unsupported-context-dialog">Keep current provider</button><button id="switch-context-provider" type="button" class="primary-button">Switch provider</button></footer>
+    </div>
+  </dialog>
+
+  <section id="terminal-panel" class="terminal-panel hidden" aria-label="Repository terminal">
+    <div id="terminal-resizer" class="terminal-resizer" role="separator" aria-orientation="horizontal" aria-label="Resize terminal"></div>
+    <header>
+      <div><span class="terminal-status-dot"></span><strong id="terminal-title">Terminal</strong><small id="terminal-cwd">Active repository</small></div>
+      <nav><button id="terminal-clear" type="button" title="Clear terminal (⌘K)">Clear</button><button id="terminal-restart" type="button">Restart</button><button id="terminal-minimize" type="button" aria-label="Minimize terminal" title="Minimize and keep this terminal session running">—</button><button id="terminal-close" type="button" aria-label="Close terminal" title="Close and stop this terminal session">×</button></nav>
+    </header>
+    <div id="terminal-output" aria-label="Interactive zsh terminal"></div>
+    <p id="terminal-status" role="status" aria-live="polite" hidden=""></p>
+  </section>
+
+  <div id="find-bar" class="find-bar hidden" role="search">
+    <span>⌕</span><input id="find-input" type="search" autocomplete="off" spellcheck="false" placeholder="Find" aria-label="Find in current view">
+    <small id="find-status">Type to search</small><button id="find-previous" type="button" title="Previous result">↑</button><button id="find-next" type="button" title="Next result">↓</button><button id="find-close" type="button" aria-label="Close find">×</button>
+  </div>
+  <aside id="background-jobs-panel" class="background-jobs-panel hidden" aria-live="polite">
+    <header title="Drag to move background activity"><div><span class="background-job-spinner"></span><strong>Background activity</strong></div><div class="background-job-window-actions"><button id="background-jobs-pause" class="hidden" type="button" aria-label="Pause all background activity" title="Pause all">Ⅱ</button><button id="background-jobs-minimize" type="button" aria-label="Minimize background activity" title="Minimize">−</button><button id="background-jobs-close" type="button" aria-label="Stop and close background activity" title="Stop and close">×</button></div></header>
+    <div id="background-jobs-list"></div>
+    <footer><button id="background-jobs-history-toggle" class="hidden" type="button" aria-expanded="false">Show more</button></footer>
+  </aside>
+  <button id="background-jobs-reopen" class="background-jobs-reopen hidden" type="button" aria-label="Show background activity; drag to move" title="Drag to move or click to open"><span class="background-job-spinner"></span><strong>Background activity</strong><small></small></button>
+  <div id="toast-stack" class="toast-stack"></div>
+  <dialog id="git-stash-dialog" class="git-stash-dialog" aria-labelledby="git-stash-title" aria-describedby="git-stash-description">
+    <form id="git-stash-form" aria-busy="false">
+      <header class="git-stash-header">
+        <span class="git-stash-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v12H4zM3 4h18v4H3zM9 12h6"></path></svg></span>
+        <div><h2 id="git-stash-title">Stash local changes</h2><p id="git-stash-repository"></p></div>
+      </header>
+      <p id="git-stash-description"></p>
+      <div id="git-stash-fields">
+        <label class="stash-message"><span>Message <span class="stash-optional">(optional)</span></span><input type="text" name="message" maxlength="240" autocomplete="off" placeholder="What are you saving?"></label>
+        <label class="stash-untracked"><input type="checkbox" name="includeUntracked"><span>Include untracked files<small>Also save new files that Git isn’t tracking.</small></span></label>
+      </div>
+      <p id="git-stash-error" class="stash-error" role="alert"></p>
+      <footer><button id="git-stash-cancel" type="button">Cancel</button><button id="git-stash-confirm" class="primary-button" type="submit">Stash changes</button></footer>
+    </form>
+  </dialog>
+  <script type="module" src="/app.js?v=20261027-404"></script>
+
+
+</body></html>

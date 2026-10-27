@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Same-chat revisions · isolated fixture</title>
+<link rel="stylesheet" href="/public/styles.css"><link rel="stylesheet" href="/public/chat-revisions.css">
+<style>body { overflow:auto; padding:32px; } main { max-width:900px; margin:auto; } .fixture-actions { display:flex;gap:12px;margin:20px 0; } .fixture-chat { border:1px solid var(--line);border-radius:12px;padding:24px; } .fixture-chat p { line-height:1.6; } #fixture-status { color:var(--muted); }</style></head>
+<body><main><p class="eyebrow">ISOLATED UI CHECK · SYNTHETIC DATA ONLY</p><h1>Nexus · API request investigation</h1>
+<p>This fixture makes no provider calls and never accesses installed Argus data.</p>
+<div class="fixture-actions"><button id="edit">Edit &amp; resend</button><span id="versions"></span><button id="theme">Toggle light / dark</button></div>
+<div class="fixture-chat"><strong>Chat identity: nexus-fixture</strong><p id="prompt">Trace the request through the service and add focused tests.</p><p id="answer">Response cancelled. Earlier work is preserved.</p></div><p id="fixture-status" role="status">One chat · no saved revisions</p></main>
+<script type="module">
+import { createPromptEditor } from '/public/prompt-editor.js';
+import { createChatRevisionViewer, revisionHistoryButton } from '/public/chat-revisions.mjs';
+import { renderChatMessage } from '/public/message-renderer.js';
+let task = { id:'nexus-fixture', title:'API request investigation', scope:'global', repositoryId:'global', revisionCount:0,
+  messages:[{id:'earlier-user',role:'user',content:'Keep all existing repository behavior intact.',createdAt:'2026-09-18T09:00:00Z'},
+  {id:'request',role:'user',content:'Trace the request through the service and add focused tests.',createdAt:'2026-09-18T09:01:00Z',attachments:[{name:'request-flow.md',kind:'file'}],promptNotes:[{text:'Explain the test coverage.',enabled:true}]},
+  {id:'cancelled-answer',role:'assistant',status:'cancelled',content:'I traced the controller → handler → service.\n\n```java\nreturn handler.createReview(request);\n```\n\n**Request cancelled** before the remaining tests ran.',createdAt:'2026-09-18T09:02:00Z'}] };
+const snapshots = [];
+const $ = selector => document.querySelector(selector);
+const viewer = createChatRevisionViewer({ document, renderMessage:renderChatMessage, api:async path => {
+  await new Promise(resolve=>setTimeout(resolve,100));
+  if(path.endsWith('/revisions')) return snapshots.map(({task,...summary})=>summary);
+  const snapshot=snapshots.find(item=>path.endsWith('/'+item.id));
+  if(!snapshot) throw new Error('No fixture version');
+  return snapshot;
+} });
+const editor=createPromptEditor({document,loadTask:async()=>structuredClone(task),submit:async({prompt,message})=>{
+  const snapshot={id:crypto.randomUUID(),createdAt:new Date().toISOString(),editedMessageId:message.id,messageCount:task.messages.length,promptPreview:message.content,task:structuredClone(task)};
+  snapshots.unshift(snapshot);
+  task={...task,revisionCount:task.revisionCount+1,messages:[task.messages[0],{...message,id:crypto.randomUUID(),content:prompt}]};
+  $('#prompt').textContent=prompt;$('#answer').textContent='Edited request submitted in this same chat.';
+  $('#versions').innerHTML=revisionHistoryButton(task,'global');
+  $('#fixture-status').textContent=`One chat · ${task.revisionCount} previous version(s)`;
+}});
+$('#edit').onclick=()=>editor.open({scope:'global',taskId:task.id,messageId:task.messages[1].id,trigger:$('#edit')});
+$('#versions').onclick=event=>{const button=event.target.closest('[data-chat-revisions]');if(button)viewer.open({taskId:task.id,scope:'global',trigger:button});};
+$('#theme').onclick=()=>document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light';
+</script></body></html>

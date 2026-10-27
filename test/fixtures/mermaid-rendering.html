@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head><meta charset="utf-8"><title>Argus Mermaid rendering checks</title><link rel="stylesheet" href="../../public/styles.css"><style>body{display:block;margin:0;padding:24px;background:#101519;color:#eee}main{max-width:1050px;margin:auto}#scroll-test{height:250px;overflow:auto}#results{white-space:pre-wrap}button{width:auto;margin:6px}.chat-code-block{margin-bottom:24px}h1{font-size:24px}</style></head>
+<body><main><h1>Argus local Mermaid rendering</h1><button id="theme">Switch theme</button><pre id="results">Rendering…</pre><section id="messages"></section><h2>Scroll preservation</h2><div id="scroll-test"><div style="height:200px">Earlier content</div><div id="scroll-diagram"></div><div style="height:600px">Later content</div></div></main>
+<script type="module">
+import { renderChatMessage } from '../../public/message-renderer.js';
+import { initializeMermaidRendering } from '../../public/mermaid-renderer.js';
+const fence = (source, close = true) => '```mermaid\n' + source + (close ? '\n```' : '');
+const sequence = `sequenceDiagram
+    participant U as CHC
+    participant C as CRM
+    participant P as POCXBFF
+    participant O as Order Service
+    participant S as Slack
+    U->>C: Request
+    Note over C: Start action A; owner = CRM
+    C->>P: Request + action A + owner CRM
+    P->>O: Request + action A + owner CRM
+    O-->>P: HTTP 500 + Order failure context
+    Note over P: Merge context; apply existing error mapping
+    P-->>C: HTTP 500 + combined failure context
+    Note over C: Merge context; capture caller outcome
+    C-->>U: Application's error response
+    Note over C,S: Delivery is asynchronous
+    C-->>S: Parent incident
+    C-->>S: Diagnostic thread replies`;
+document.querySelector('#messages').innerHTML = [sequence, 'flowchart LR\n A[Receive prompt] --> B{Existing context?}\n B -->|Yes| C[Resume chat]\n B -->|No| D[New chat]', 'this is not valid Mermaid'].map((source) => renderChatMessage(fence(source))).join('') + renderChatMessage(fence('flowchart LR\n A -->', false));
+const scroller = document.querySelector('#scroll-test');
+document.querySelector('#scroll-diagram').innerHTML = renderChatMessage(fence('flowchart LR\n A --> B'));
+scroller.scrollTop = 110;
+const before = scroller.scrollTop;
+initializeMermaidRendering();
+document.querySelector('#theme').onclick = () => { document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; };
+const interval = setInterval(() => {
+  const blocks = [...document.querySelectorAll('.chat-mermaid-block')];
+  const valid = blocks.filter((block) => block.querySelector('.chat-diagram-image'));
+  const errors = blocks.filter((block) => block.querySelector('.chat-diagram-status')?.textContent.startsWith('Could not display'));
+  document.querySelector('#results').textContent = JSON.stringify({rendered:valid.length, invalidFallback: errors.length, partialWaiting: blocks.at(3).dataset.mermaidComplete === 'false', scrollPreserved:scroller.scrollTop === before, staticFramesSandboxed:valid.every((b)=>b.querySelector('iframe').getAttribute('sandbox')===''), results:valid.length===3 && errors.length===1?'PASS':'pending'}, null, 2);
+  if (valid.length===3 && errors.length===1) clearInterval(interval);
+}, 300);
+</script></body></html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Argus new-chat typography regression</title>
+<style>body { margin: 16px; font: 14px system-ui; background: #101318; color: #eef1f6; } button,select { padding: 8px; margin: 4px; } iframe { border: 1px solid #777; transform-origin: top left; } #preview { overflow: hidden; } pre { white-space: pre-wrap; max-height: 110px; overflow: auto; } #measurement { position: absolute; left: -20000px; }</style></head>
+<body><h1>New-chat typography: isolated production markup</h1>
+<p>No application scripts, private data, agent requests, or storage are used. Checks compare both scopes against the original repository type scale.</p>
+<label>Width <select id="width"><option>820</option><option selected>1440</option><option>2560</option><option>3440</option></select></label>
+<label>Appearance <select id="mode"><option>dark</option><option>light</option></select></label>
+<label>Scope <select id="scope"><option value="global">Nexus</option><option value="repository">Repository</option></select></label>
+<label>Zoom <select id="zoom"><option>1</option><option>1.04</option><option>1.12</option><option>1.22</option></select></label>
+<button id="show">Show preview</button><pre id="result">Checking…</pre><div id="preview"></div><div id="measurement"></div>
+<script type="module">
+import { nexusThemeVariables, NEXUS_THEMES } from '/nexus-themes.mjs';
+const source = new DOMParser().parseFromString(await (await fetch('/index.html')).text(), 'text/html');
+source.querySelectorAll('script,link:not([rel="stylesheet"])').forEach(node => node.remove());
+source.querySelector('#empty-state').classList.add('hidden');
+source.querySelector('#workspace').classList.remove('hidden');
+source.querySelector('#global-ai-status').textContent = 'Codex connected';
+source.querySelector('#global-ai-version').textContent = 'Isolated fixture · no provider requests';
+source.querySelector('#nexus-theme-label').textContent = 'Ember';
+source.querySelectorAll('link[rel="stylesheet"]').forEach(link => link.href = new URL(link.getAttribute('href'), location.origin).href);
+
+async function frame(width, mode, zoom, scope, theme = 'ember') {
+  const doc = source.cloneNode(true);
+  doc.documentElement.dataset.theme = mode;
+  doc.body.dataset.view = scope;
+  doc.body.style.zoom = zoom;
+  const panel = doc.querySelector('#global-codex-panel');
+  panel.classList.toggle('hidden', scope !== 'global');
+  for (const [key, value] of Object.entries(nexusThemeVariables(theme, mode))) panel.style.setProperty(key, value);
+  const element = document.createElement('iframe');
+  element.width = width; element.height = 960;
+  const ready = new Promise(resolve => element.onload = resolve);
+  element.srcdoc = '<!doctype html>' + doc.documentElement.outerHTML;
+  document.querySelector('#measurement').append(element);
+  await ready;
+  await element.contentDocument.fonts.ready;
+  return element;
+}
+
+function metrics(element, scope) {
+  const doc = element.contentDocument, win = element.contentWindow;
+  const empty = doc.querySelector(scope === 'global' ? '#global-agent-conversation .chat-empty-state' : '#agent-conversation .chat-empty-state');
+  const heading = empty.querySelector('h1'), style = win.getComputedStyle(heading);
+  return { size: parseFloat(style.fontSize), weight: style.fontWeight, spacing: style.letterSpacing,
+    top: style.marginTop, bottom: style.marginBottom, paragraphSize: win.getComputedStyle(empty.lastElementChild).fontSize,
+    visible: heading.getBoundingClientRect().width > 0 && heading.getBoundingClientRect().height > 0,
+    noOverflow: heading.scrollWidth <= heading.clientWidth + 1 };
+}
+
+const failures = [], results = [];
+for (const width of [820, 1440, 2560, 3440]) for (const mode of ['dark', 'light']) for (const zoom of [1, 1.04, 1.12, 1.22]) {
+  const pair = [];
+  for (const scope of ['repository', 'global']) {
+    const element = await frame(width, mode, zoom, scope), actual = metrics(element, scope);
+    pair.push(actual); element.remove();
+    const expected = Math.max(34, Math.min(54, width * .04));
+    if (Math.abs(actual.size - expected) > .02 || actual.weight !== '600' || actual.top !== '0px' || actual.bottom !== '12px' || !actual.visible || !actual.noOverflow) failures.push({ width, mode, zoom, scope, actual, expected });
+  }
+  if (JSON.stringify(pair[0]) !== JSON.stringify(pair[1])) failures.push({ width, mode, zoom, mismatch: pair });
+  results.push({ width, mode, zoom, headingPx: pair[1].size, identical: JSON.stringify(pair[0]) === JSON.stringify(pair[1]) });
+}
+for (const theme of NEXUS_THEMES) for (const mode of ['dark', 'light']) {
+  const element = await frame(1440, mode, 1, 'global', theme.id), actual = metrics(element, 'global');
+  if (actual.size !== 54 || actual.weight !== '600' || !actual.visible) failures.push({ theme: theme.id, mode, actual });
+  element.remove();
+}
+document.querySelector('#result').textContent = JSON.stringify({ status: failures.length ? 'FAIL' : 'PASS', pairedScenarios: results.length, renderedScopeChecks: results.length * 2, additionalPaletteChecks: 20, failures, results }, null, 2);
+async function preview() {
+  const width = Number(document.querySelector('#width').value), mode = document.querySelector('#mode').value;
+  const element = await frame(width, mode, Number(document.querySelector('#zoom').value), document.querySelector('#scope').value);
+  const area = document.querySelector('#preview'); area.replaceChildren(element);
+  const scale = Math.min(1, (document.documentElement.clientWidth - 40) / width);
+  element.style.transform = `scale(${scale})`; area.style.height = `${960 * scale}px`;
+}
+document.querySelector('#show').onclick = preview;
+await preview();
+</script></body></html>

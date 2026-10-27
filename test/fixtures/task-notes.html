@@ -1,0 +1,29 @@
+<!doctype html><html data-theme="dark" data-font-family="comic-sans"><head><meta charset="utf-8"><title>Argus task notes — isolated QA</title>
+<link rel="stylesheet" href="/public/styles.css"><link rel="stylesheet" href="/public/font-family.css"><link rel="stylesheet" href="/public/task-prompt-notes.css"><link rel="stylesheet" href="/public/token-usage.css">
+<style>body{display:block;padding:24px;overflow:auto}main{max-width:920px;margin:auto}h1{font-size:22px}nav{display:flex;gap:8px;margin:20px 0}nav button{padding:9px 13px;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:8px;font-size:11px}.fixture-composer{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--surface)}#fixture-prompt{display:block;width:100%;height:90px;background:var(--surface);color:var(--text);padding:10px;font-size:12px}#fixture-status{white-space:pre-wrap;font:12px monospace;overflow-wrap:anywhere;margin:20px 0}.execution-token-usage{margin:20px 0}</style></head><body><main>
+<h1>Task notes and usage · isolated QA</h1><p>No provider calls, no repository or live app data. Saved defaults are in-memory fixtures.</p>
+<nav><button data-task="repo-a">Repository task A</button><button data-task="repo-b">Repository task B</button><button data-task="nexus-a">Nexus task</button><button id="fixture-theme">Switch theme</button></nav>
+<h2 id="fixture-title">Repository task A</h2><div class="fixture-composer"><textarea id="fixture-prompt" placeholder="Write a prompt">Keep this composer draft</textarea><div id="repository-task-notes" class="task-notes-bar"></div><div id="global-task-notes" class="task-notes-bar" hidden></div><button id="fixture-send" class="primary-button">Simulate send</button></div><pre id="fixture-status" role="status">Nothing sent.</pre><div id="fixture-usage"></div>
+</main><script type="module">
+import {createTaskPromptNotes} from '/public/task-prompt-notes.mjs';
+import {renderTokenUsage} from '/public/token-usage.mjs';
+let active = 'repo-a';
+const tasks = {
+ 'repo-a':{id:'repo-a',scope:'repository',repositoryId:'fixture-repo',title:'Repository task A',promptNotes:[]},
+ 'repo-b':{id:'repo-b',scope:'repository',repositoryId:'fixture-repo',title:'Repository task B',promptNotes:[]},
+ 'nexus-a':{id:'nexus-a',scope:'global',repositoryId:'global',title:'Nexus task',promptNotes:[]},
+};
+let ticks = 0;
+const notes = createTaskPromptNotes({document,
+ getContext:scope=>({scope,repositoryId:scope==='global'?'global':'fixture-repo',taskId:active}),
+ loadTask:async id=>structuredClone(tasks[id]),
+ saveTask:async(context,promptNotes)=>{tasks[context.taskId].promptNotes=structuredClone(promptNotes);tasks[context.taskId].updatedAt=new Date(Date.now()+(++ticks)).toISOString();return structuredClone(tasks[context.taskId]);},
+ onError:error=>document.querySelector('#fixture-status').textContent=error.message,
+});
+const render = () => {const task=tasks[active];document.querySelector('#fixture-title').textContent=task.title;document.querySelector('#repository-task-notes').hidden=task.scope!=='repository';document.querySelector('#global-task-notes').hidden=task.scope!=='global';notes.sync(task.scope,task);};
+document.querySelectorAll('[data-task]').forEach(button=>button.addEventListener('click',()=>{active=button.dataset.task;render();}));
+document.querySelector('#fixture-send').addEventListener('click',()=>{const captured=notes.capture(tasks[active].scope);document.querySelector('#fixture-status').textContent=JSON.stringify(captured.request,null,2);notes.submitted(captured,active);});
+document.querySelector('#fixture-theme').addEventListener('click',()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';});
+document.querySelector('#fixture-usage').innerHTML=renderTokenUsage({status:'final',exact:true,reported:true,inputTokens:12121,outputTokens:456,totalTokens:12577,cachedInputTokens:8000,reasoningOutputTokens:100,coverage:'complete',source:'Synthetic QA data — not a real request'});
+render();setInterval(render,2000);
+</script></body></html>

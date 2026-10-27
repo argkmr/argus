@@ -1,0 +1,126 @@
+{
+  "name": "argus-personal",
+  "version": "0.1.0",
+  "argusBuild": "20261027-404",
+  "private": true,
+  "type": "module",
+  "description": "Personal workspace for repositories, Git, diagrams and Codex/Claude CLIs.",
+  "author": "Argus",
+  "main": "desktop/main.mjs",
+  "scripts": {
+    "canvas:dev": "vite --config canvas-web/vite.config.mjs --host 127.0.0.1",
+    "canvas:build": "vite build --config canvas-web/vite.config.mjs",
+    "canvas:server": "node canvas-server/cli.mjs",
+    "test:canvas-sharing": "node --test test/canvas-*.test.mjs",
+    "dev": "node scripts/dev.mjs",
+    "test": "node --test test/*.test.mjs",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "mvn -f backend/pom.xml clean verify",
+    "build:platform": "node scripts/sync-build-id.mjs && npm run build:native && npm run build:ide-tools && npm run build:frontend && npm run build:backend",
+    "build:ide-tools": "node scripts/build-ide-tools.mjs",
+    "build:native": "node scripts/build-process-launcher.mjs",
+    "desktop": "electron .",
+    "build:runtime": "node scripts/build-java-runtime.mjs",
+    "build:source": "node scripts/build-source-bundle.mjs",
+    "build:icon": "node scripts/build-app-icon.mjs",
+    "dist:mac": "npm run build:platform && npm run build:runtime && npm run build:source && npm run build:icon && node scripts/package-macos-release.mjs && node scripts/finalize-mac-release.mjs",
+    "dist:mac:publish": "npm run dist:mac && node scripts/finalize-mac-release.mjs --publish"
+  },
+  "devDependencies": {
+    "@excalidraw/excalidraw": "0.18.1",
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/xterm": "6.0.0",
+    "@xyflow/react": "12.12.0",
+    "docx-preview": "0.4.0",
+    "electron": "^37.4.0",
+    "electron-builder": "^26.0.12",
+    "html-to-image": "1.11.11",
+    "jszip": "3.10.1",
+    "markdown-it": "15.0.1",
+    "mermaid": "11.17.2",
+    "monaco-editor": "0.56.0",
+    "next": "^16.3.3",
+    "pdfjs-dist": "5.6.205",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "typescript": "6.0.3",
+    "typescript-language-server": "6.0.0",
+    "vite": "8.3.4"
+  },
+  "overrides": {
+    "@excalidraw/excalidraw": {
+      "nanoid": "3.3.18",
+      "sass": {
+        ".": "1.79.4",
+        "source-map-js": "1.2.2"
+      },
+      "@excalidraw/mermaid-to-excalidraw": {
+        "nanoid": "5.1.16",
+        "lodash-es": "4.18.1"
+      }
+    }
+  },
+  "build": {
+    "appId": "com.argus.personal",
+    "productName": "Argus Personal",
+    "asar": true,
+    "files": [
+      "canvas-server/**/*.mjs",
+      "frontend/features/diagrams/**/*.mjs",
+      "chrome-extension/**/*",
+      "desktop/**/*",
+      "docs/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/ide-tools",
+        "to": "ide-tools",
+        "filter": [
+          "**/*",
+          "!.jdtls-*/**"
+        ]
+      },
+      {
+        "from": "backend/target/argus-backend-0.1.0.jar",
+        "to": "backend/argus-backend.jar"
+      },
+      {
+        "from": "build/runtime-arm64",
+        "to": "runtime"
+      },
+      {
+        "from": "build/native-arm64/argus-process-launcher",
+        "to": "native/argus-process-launcher"
+      },
+      {
+        "from": "build/source",
+        "to": "source"
+      }
+    ],
+    "mac": {
+      "identity": "-",
+      "category": "public.app-category.developer-tools",
+      "icon": "build/icon.png",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "target": [
+        "dmg"
+      ]
+    },
+    "dmg": {
+      "title": "Argus Personal ${version}",
+      "artifactName": "Argus-Personal-${version}-${arch}.${ext}"
+    }
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "dependencies": {
+    "parse5": "8.0.1",
+    "simple-icons": "16.35.0",
+    "ws": "8.22.0",
+    "yjs": "13.6.33"
+  }
+}

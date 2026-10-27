@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Workspace Tools overlay — isolated UI regression</title>
+<style>
+body{margin:18px;background:#11161c;color:#eef3f7;font:14px system-ui}h1{font-size:22px}p{color:#aeb8c6}label{display:inline-flex;gap:6px;align-items:center;margin:0 12px 10px 0}select,button{font:inherit;padding:7px;color:inherit;background:#202831;border:1px solid #536273;border-radius:6px}button{cursor:pointer}iframe{display:block;height:840px;border:1px solid #536273}#result{padding:12px;background:#1b232c;white-space:pre-wrap;max-height:270px;overflow:auto}#measure{position:absolute;left:-20000px;top:0}#preview{overflow:auto}
+</style></head><body>
+<h1>Workspace Tools overlay</h1>
+<p>Production markup, styles and menu/navigation functions with synthetic repositories and chats. No application script initialization, profile storage, agent, Git, backup or external API calls.</p>
+<label>Width <select id="width"><option>640</option><option selected>1440</option><option>2560</option></select></label>
+<label>Height <select id="height"><option>520</option><option>640</option><option selected>840</option></select></label>
+<label>Appearance <select id="appearance"><option>dark</option><option>light</option></select></label>
+<label>Font <select id="font"><option value="comic-sans">Comic Sans</option><option value="system">System</option></select></label>
+<label>View <select id="view"><option value="global">Nexus</option><option value="repository">Repository chat</option><option value="services">Services</option><option value="api">API Client</option><option value="json">JSON Explorer</option><option value="orchestration">Agents</option></select></label>
+<label>Tasks <select id="tasks"><option value="open">Open</option><option value="collapsed">Collapsed</option><option value="git">Git open</option></select></label>
+<button id="show">Show preview</button><button id="run">Run checks again</button>
+<pre id="result" role="status">Loading production fixtures…</pre><div id="preview"></div><div id="measure"></div>
+<script type="module">
+import { nexusThemeVariables } from '/public/nexus-themes.mjs';
+const source = await (await fetch('/public/app.js')).text();
+const page = new DOMParser().parseFromString(await (await fetch('/public/index.html')).text(), 'text/html');
+page.querySelectorAll('script').forEach(script => script.remove());
+const stylesheetLinks = [...page.querySelectorAll('link[rel="stylesheet"]')].map(link => {
+  link.href = new URL(link.getAttribute('href'), location.origin).href; return link.outerHTML;
+}).join('');
+function declaration(name) {
+  const start = source.indexOf(`function ${name}(`);
+  if(start < 0) throw new Error(`Missing production function: ${name}`);
+  return source.slice(start, source.indexOf('\n}', start) + 2);
+}
+const functions = ['activeTaskPanelScope','syncWorkspaceRail','syncWorkspaceToolsOverlay','setWorkspaceToolsOpen','showWorkspaceTools','bindWorkspaceToolsMenu','launchWorkspaceTool','switchPrimaryView'].map(declaration).join('\n');
+const selectors = {global:'#global-codex-panel',repository:'#workspace',services:'#services-drawer',api:'#api-client-drawer',json:'#json-explorer-panel',orchestration:'#orchestration-panel'};
+const pause = win => new Promise(resolve => win.requestAnimationFrame(() => win.requestAnimationFrame(resolve)));
+const rect = element => { const r=element.getBoundingClientRect(); return {x:r.x,y:r.y,width:r.width,height:r.height}; };
+function sameRect(a,b){return ['x','y','width','height'].every(key=>Math.abs(a[key]-b[key])<.2);}
+async function makeFrame(width,appearance,font,target=document.querySelector('#measure')) {
+  const iframe=document.createElement('iframe'); iframe.style.width=`${width}px`; iframe.style.height=`${document.querySelector('#height').value}px`;
+  const ready=new Promise(resolve=>iframe.onload=resolve);
+  iframe.srcdoc=`<!doctype html><html data-theme="${appearance}" data-font-family="${font}"><head>${stylesheetLinks}</head><body>${page.body.innerHTML}</body></html>`;
+  target.append(iframe); await ready;
+  const doc=iframe.contentDocument, win=iframe.contentWindow;
+  await doc.fonts.ready;
+  const runtime = new win.Function(`
+    const $=selector=>document.querySelector(selector), $$=selector=>[...document.querySelectorAll(selector)];
+    const preferences=new Map(), effects=[], routes=[];
+    const localStorage={setItem:(name,value)=>preferences.set(name,value)};
+    const state={currentView:'global',activeRepository:{id:'fixture-repo',name:'fixture-repo'},workspace:{repositories:[{id:'fixture-repo',name:'fixture-repo'}]},activeGlobalTaskId:'fixture-nexus-chat',activeTaskByRepository:{'fixture-repo':'fixture-repo-chat'},globalJob:{id:'fixture-job',status:'running',taskId:'fixture-nexus-chat'}};
+    const closeOpenDialogs=()=>{effects.push('close-dialogs');return true;};
+    const syncRepositoryTabSelection=()=>effects.push('render-tabs');
+    const syncViewUrl=view=>routes.push(view);
+    const setVersionControlDockOpen=open=>document.body.classList.toggle('version-control-dock-open',Boolean(open));
+    ${functions}
+    bindWorkspaceToolsMenu();
+    return {state,effects,routes,showWorkspaceTools,setWorkspaceToolsOpen,launchWorkspaceTool,switchPrimaryView,syncWorkspaceRail};
+  `)();
+  doc.querySelector('#workspace').classList.remove('hidden');
+  doc.querySelector('#empty-state').classList.add('hidden');
+  doc.querySelector('.ai-canvas').prepend(doc.querySelector('.git-panel'));
+  doc.querySelector('#context-repo').textContent='fixture-repo';
+  doc.querySelector('#context-branch').textContent='feature/overlay-regression';
+  doc.querySelector('#repo-tabs').innerHTML='<div class="repo-tab active"><button class="repo-tab-main"><span class="repo-dot"></span><span class="repo-tab-label">fixture-repo</span></button><button class="repo-tab-close" aria-label="Offboard fixture">×</button></div>';
+  const taskMarkup='<div class="task-row active"><button class="task-row-main"><strong>Overlay regression chat</strong><small>40 messages · synthetic fixture</small></button><div class="task-row-actions"><button title="Rename task">✎</button><button title="Delete task">×</button></div></div>';
+  for(const id of ['repository-task-list','global-task-list']) doc.querySelector('#'+id).innerHTML=taskMarkup;
+  doc.querySelector('#global-repository-list').innerHTML=['api-service','web-service','worker-service'].map(name=>`<div class="global-repository-item"><span></span><strong>${name}</strong></div>`).join('');
+  for(const prefix of ['','global-']) {
+    const conversation=doc.querySelector('#'+prefix+'agent-conversation'); conversation.classList.remove('is-empty');
+    conversation.innerHTML=Array.from({length:20},(_,i)=>`<article class="chat-message assistant"><div class="chat-message-meta">Argus · message ${i+1}</div><div class="chat-message-body"><p>This is synthetic chat history. Opening Workspace Tools must not move this conversation, lose its draft, or reset this scroll position.</p><p>The existing screen stays full width behind the menu overlay.</p></div></article>`).join('');
+    doc.querySelector('#'+prefix+'agent-prompt').value=prefix?'Unsent Nexus fixture draft':'Unsent repository fixture draft';
+    const provider=doc.querySelector('#'+prefix+'agent-provider'); if(provider) provider.innerHTML='<option>Codex</option>';
+    const model=doc.querySelector('#'+prefix+'agent-model'); if(model) model.innerHTML='<option>GPT-6-Astra</option>';
+  }
+  doc.querySelector('#global-ai-status').textContent='Codex connected';
+  doc.querySelector('#global-ai-version').textContent='Synthetic fixture — no model calls';
+  doc.querySelector('#local-ai-version').textContent='Synthetic fixture — no model calls';
+  doc.querySelector('#ai-status-text').textContent='Codex ready';
+  for(const [key,value] of Object.entries(nexusThemeVariables('ember',appearance))) {
+    doc.querySelector('#global-codex-panel').style.setProperty(key,value);
+    doc.querySelector('#nexus-shortcut').style.setProperty(key,value);
+  }
+  for(const [id,view] of [['services-toggle','services'],['api-client-toggle','api'],['json-explorer-toggle','json'],['agents-toggle','orchestration']]) {
+    doc.querySelector('#'+id).addEventListener('click',()=>runtime.launchWorkspaceTool(()=>runtime.switchPrimaryView(view)));
+  }
+  doc.querySelector('#connections-toggle').addEventListener('click',()=>runtime.launchWorkspaceTool(()=>doc.querySelector('#connections-dialog').show()));
+  doc.querySelector('#nexus-shortcut').addEventListener('click',()=>runtime.switchPrimaryView('global'));
+  doc.querySelector('#brand-home').addEventListener('click',event=>{event.preventDefault();runtime.switchPrimaryView('repository');});
+  doc.querySelectorAll('[data-close-dialog]').forEach(button=>button.addEventListener('click',()=>button.closest('dialog')?.close()));
+  doc.querySelectorAll('form').forEach(form=>form.addEventListener('submit',event=>event.preventDefault()));
+  runtime.prepare=(view,layout='open')=>{
+    runtime.setWorkspaceToolsOpen(false);
+    doc.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());
+    runtime.switchPrimaryView(view);
+    doc.body.classList.toggle('version-control-dock-open',layout==='git'&&view!=='global');
+    doc.querySelector('.ai-canvas').classList.toggle('task-panel-collapsed',layout!=='open');
+    runtime.syncWorkspaceRail();
+    runtime.effects.length=0;runtime.routes.length=0;
+  };
+  return {iframe,doc,win,runtime};
+}
+async function runChecks() {
+  const output=document.querySelector('#result'), failures=[];let checks=0;
+  output.textContent='Checking actual browser layout and menu behavior…';
+  for(const width of [640,1440,2560]) for(const appearance of ['dark','light']) for(const font of ['system','comic-sans']) {
+    const f=await makeFrame(width,appearance,font),{doc,win,runtime}=f;
+    for(const view of Object.keys(selectors)) for(const layout of ['open','collapsed','git']) {
+      const label={width,appearance,font,view,layout};runtime.prepare(view,layout);await pause(win);
+      const surface=doc.querySelector(selectors[view]), before=rect(surface), state=JSON.stringify(runtime.state);
+      const tracked=[surface,...(view==='global'?[doc.querySelector('#global-context-sidebar'),doc.querySelector('.global-codex-layout > main')]:view==='repository'?[doc.querySelector('.ai-main-content'),doc.querySelector('.context-strip')]:[])];
+      const geometry=tracked.map(rect),scrollers=[...doc.querySelectorAll('.chat-scroll-region')];
+      scrollers.forEach(item=>item.scrollTop=125);const scroll=scrollers.map(item=>item.scrollTop);
+      const summary=doc.querySelector('#app-menu > summary');summary.click();await pause(win);
+      const panel=doc.querySelector('#app-menu-panel'),panelRect=rect(panel),railRect=rect(doc.querySelector('#app-menu'));
+      const problem=[];
+      if(!doc.querySelector('#app-menu').open||summary.getAttribute('aria-expanded')!=='true')problem.push('menu did not open accessibly');
+      if(!tracked.every((item,i)=>sameRect(rect(item),geometry[i])))problem.push({geometryChanged:{before:geometry,after:tracked.map(rect)}});
+      if(JSON.stringify(runtime.state)!==state||runtime.effects.length||runtime.routes.length)problem.push('base state/navigation/render changed');
+      if(scrollers.some((item,i)=>item.scrollTop!==scroll[i]))problem.push('chat scroll moved');
+      if(doc.querySelector('#global-agent-prompt').value!=='Unsent Nexus fixture draft'||doc.querySelector('#agent-prompt').value!=='Unsent repository fixture draft')problem.push('draft changed');
+      if(Math.abs(railRect.width-30)>.2||Math.abs(panelRect.x-30)>.2||panelRect.width<240||panelRect.width>270)problem.push({badOverlayBounds:{railRect,panelRect}});
+      if(doc.elementFromPoint(panelRect.x+panelRect.width/2,panelRect.y+20)?.closest('#app-menu-panel')!==panel)problem.push('menu is not on top of the screen');
+      if(['services','api','json','orchestration'].includes(view)&&(Math.abs(before.x-30)>.2||Math.abs(before.width-(width-30))>.2))problem.push({toolNotFullWidth:before});
+      if(view==='global'&&width>=1440){const inset=doc.querySelector('#global-context-sidebar').getBoundingClientRect().left-before.x;if(inset>10)problem.push({nexusLeftGutter:inset});}
+      const escape=new win.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true});panel.dispatchEvent(escape);await pause(win);
+      if(doc.querySelector('#app-menu').open||doc.activeElement!==summary||!escape.defaultPrevented)problem.push('Escape/focus did not close menu');
+      if(!sameRect(rect(surface),before)||scrollers.some((item,i)=>item.scrollTop!==scroll[i]))problem.push('close changed geometry or scroll');
+      runtime.showWorkspaceTools();const pointer=new win.PointerEvent('pointerdown',{bubbles:true,cancelable:true});surface.dispatchEvent(pointer);
+      if(doc.querySelector('#app-menu').open||pointer.defaultPrevented)problem.push('outside click did not pass through');
+      checks++;if(problem.length)failures.push({...label,problem});
+    }
+    runtime.prepare('global');await pause(win);
+    const base=doc.querySelector('#global-codex-panel'),baseRect=rect(base),baseState=JSON.stringify(runtime.state);
+    runtime.showWorkspaceTools();
+    runtime.launchWorkspaceTool(()=>doc.querySelector('#connections-dialog').show());await pause(win);
+    const dialog=doc.querySelector('#connections-dialog');
+    let problem=[];
+    if(!dialog.open||doc.querySelector('#app-menu').open||!sameRect(rect(base),baseRect)||JSON.stringify(runtime.state)!==baseState||runtime.routes.length)problem.push('dialog launch disturbed Nexus');
+    runtime.showWorkspaceTools();await pause(win);
+    if(!dialog.open||!sameRect(rect(base),baseRect))problem.push('opening Tools dismissed the existing dialog');
+    checks++;if(problem.length)failures.push({width,appearance,font,view:'connections-over-Nexus',problem});
+    dialog.close();
+    for(const type of ['modal','popover']) {
+      runtime.showWorkspaceTools();
+      const topLayer=doc.querySelector(type==='modal'?'#git-stash-dialog':'#nexus-theme-picker');
+      if(type==='modal')topLayer.showModal();else topLayer.showPopover();
+      const event=new win.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true});topLayer.dispatchEvent(event);
+      problem=[];if(!doc.querySelector('#app-menu').open||event.defaultPrevented)problem.push(`Tools intercepted native ${type} Escape`);
+      if(type==='modal')topLayer.close();else topLayer.hidePopover();
+      runtime.setWorkspaceToolsOpen(false);checks++;if(problem.length)failures.push({width,appearance,font,view:type,problem});
+    }
+    f.iframe.remove();output.textContent=JSON.stringify({status:'CHECKING',checks,failures},null,2);
+  }
+  output.textContent=JSON.stringify({status:failures.length?'FAIL':'PASS',checks,failures},null,2);
+}
+async function preview() {
+  const target=document.querySelector('#preview');target.replaceChildren();
+  const f=await makeFrame(Number(document.querySelector('#width').value),document.querySelector('#appearance').value,document.querySelector('#font').value,target);
+  f.runtime.prepare(document.querySelector('#view').value,document.querySelector('#tasks').value);
+  f.runtime.showWorkspaceTools();
+}
+document.querySelector('#show').onclick=preview;document.querySelector('#run').onclick=runChecks;
+try{await runChecks();await preview();}catch(error){document.querySelector('#result').textContent='FIXTURE ERROR: '+error.stack;}
+</script></body></html>

@@ -1,0 +1,9 @@
+.diagram-board-selection { display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.diagram-board-selection label { display:flex; align-items:center; gap:5px; font-size:11px; }
+.diagram-board-selection span { color:var(--muted); font-size:10px; margin-right:auto; }
+.diagram-board-selection button { min-height:27px; padding:4px 7px; font-size:10px; }
+.diagram-board-selection input[type="checkbox"], .diagram-board-item .diagram-board-checkbox { flex:none; width:15px; height:15px; min-height:0; padding:0; margin:4px; accent-color:var(--accent); }
+.diagram-board-selection .diagram-delete-selected { color:var(--red,#ed8b8b); }
+.diagram-board-selection-status { margin:0; color:var(--muted); font-size:11px; line-height:1.45; overflow-wrap:anywhere; }
+.diagram-header-actions-lock { display:contents; }
+.diagram-drawing-welcome>div:not(.diagram-welcome-mark) { grid-template-columns:minmax(0,360px); justify-content:center; }

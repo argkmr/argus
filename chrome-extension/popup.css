@@ -1,0 +1,23 @@
+:root { color-scheme: dark; font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+body { width: 320px; margin: 0; padding: 16px; background: #0d1014; color: #f5f7f9; }
+main { display: flex; gap: 11px; align-items: center; }
+.mark { width: 38px; height: 38px; display: grid; place-items: center; flex: none; overflow: hidden; border: 1px solid #d7ff5f40; border-radius: 10px; background: #07101f; }
+.mark img { width: 36px; height: 36px; object-fit: contain; }
+h1 { margin: 0 0 4px; font-size: 15px; } p { margin: 0; color: #9aa3af; font-size: 11px; line-height: 1.45; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 15px 0 10px; }
+button { width: 100%; height: 38px; margin: 0; border: 0; border-radius: 8px; background: #d7ff5f; color: #172006; font-size: 10px; font-weight: 750; }
+button.secondary { border: 1px solid #4a5541; background: #171d18; color: #dffb87; }
+button:disabled { background: #343b44; color: #8c95a2; }
+small { display: block; color: #717b88; font-size: 9px; line-height: 1.45; }
+.pairing { display: grid; gap: 6px; margin: 10px 0; padding: 10px; border: 1px solid #74a7ff3d; border-radius: 9px; background: #74a7ff0a; }
+.pairing.hidden { display: none; }
+.pairing strong { font-size: 11px; }
+.pairing > div { display: grid; grid-template-columns: 1fr 72px; gap: 6px; }
+.pairing input { min-width: 0; height: 34px; padding: 0 9px; border: 1px solid #39434f; border-radius: 7px; outline: 0; background: #10151a; color: #f5f7f9; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em; }
+.pairing input:focus { border-color: #74a7ff; }
+.pairing button { height: 36px; }
+.progress { display: grid; gap: 6px; margin: 0 0 10px; }
+.progress.hidden { display: none; }
+.progress > span { width: 100%; height: 3px; overflow: hidden; border-radius: 999px; background: #242b31; }
+.progress > span::after { content: ""; display: block; width: 35%; height: 100%; background: #d7ff5f; animation: loading 1s ease-in-out infinite alternate; }
+@keyframes loading { to { transform: translateX(185%); } }

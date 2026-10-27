@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Nexus curated themes — isolated browser checks</title>
+<style>body{margin:20px;background:#10161e;color:#edf3fa;font:14px system-ui}h1{font-size:22px}p{color:#bac8d6}label{margin-right:12px}select,button{font:inherit;padding:7px;background:#1e2c3c;color:inherit;border:1px solid #607c98;border-radius:6px}iframe{display:block;width:100%;height:840px;border:1px solid #607c98}#result{white-space:pre-wrap;max-height:240px;overflow:auto}#measure{position:absolute;left:-20000px}</style>
+</head><body><h1>Nexus themes: six dark + six light</h1>
+<p>Production markup, styles and theme-picker module. Synthetic chat, in-memory preferences and mocked saves only. This page does not access the installed app, user profile or model.</p>
+<label>Width <select id="width"><option>640</option><option selected>1440</option><option>2560</option></select></label>
+<label>Appearance <select id="appearance"><option>dark</option><option>light</option></select></label>
+<label>Font <select id="font"><option value="comic-sans">Comic Sans</option><option value="system">System</option></select></label>
+<button id="show">Show preview</button><button id="run">Run checks</button><pre id="result" role="status">Loading production UI…</pre><div id="preview"></div><div id="measure"></div>
+<script type="module">
+import { initializeNexusThemePicker } from '/public/nexus-theme-picker.mjs';
+import { nexusThemeChoices, nexusThemeVariables } from '/public/nexus-themes.mjs';
+const source=new DOMParser().parseFromString(await(await fetch('/public/index.html')).text(),'text/html');
+source.querySelectorAll('script').forEach(script=>script.remove());
+const links=[...source.querySelectorAll('link[rel="stylesheet"]')].map(link=>{link.href=new URL(link.getAttribute('href'),location.origin).href;return link.outerHTML;}).join('');
+const pause=win=>new Promise(resolve=>win.requestAnimationFrame(()=>win.requestAnimationFrame(resolve)));
+async function frame(width,appearance,font,target=document.querySelector('#measure')) {
+  const iframe=document.createElement('iframe');iframe.style.width=`${width}px`;
+  const ready=new Promise(resolve=>iframe.onload=resolve);
+  iframe.srcdoc=`<!doctype html><html lang="en" data-theme="${appearance}" data-font-family="${font}"><head>${links}</head><body data-view="global">${source.body.innerHTML}</body></html>`;
+  target.append(iframe);await ready;
+  const doc=iframe.contentDocument,win=iframe.contentWindow;
+  await doc.fonts.ready;
+  doc.querySelector('#global-codex-panel').classList.remove('hidden');
+  doc.querySelector('#workspace').classList.remove('hidden');
+  doc.querySelector('#empty-state').classList.add('hidden');
+  doc.querySelector('#nexus-shortcut').classList.add('active');
+  const task='<div class="task-row active"><button class="task-row-main"><strong>Trace a request</strong><small>Synthetic chat · 40 messages</small></button><div class="task-row-actions"><button title="Rename task">✎</button><button title="Delete task">×</button></div></div>';
+  doc.querySelector('#global-task-list').innerHTML=task;
+  doc.querySelector('#global-repository-list').innerHTML=['api-service','web-service','worker-service'].map(name=>`<div class="global-repository-item"><span></span><strong>${name}</strong></div>`).join('');
+  doc.querySelector('#global-ai-status').textContent='Codex connected';doc.querySelector('#global-ai-version').textContent='Synthetic preview — no model calls';
+  doc.querySelector('#repo-tabs').innerHTML='<div class="repo-tab"><button class="repo-tab-main"><span class="repo-dot"></span><span class="repo-tab-label">api-service</span></button><button class="repo-tab-close" aria-label="Offboard synthetic repository">×</button></div>';
+  const conversation=doc.querySelector('#global-agent-conversation');conversation.classList.remove('is-empty');
+  conversation.innerHTML=Array.from({length:12},(_,i)=>`<article class="chat-message ${i%2?'assistant':'user'}"><div class="chat-avatar">${i%2?'A':'Y'}</div><div class="chat-message-body"><div class="chat-message-meta">${i%2?'Argus':'You'} · synthetic message ${i+1}</div><div class="chat-message-content"><p>${i%2?'I’ll trace the request through the connected services, then show the relevant files and test results.':'Help me trace this request across the connected services.'}</p>${i%2?'<p><code class="chat-inline-code">Controller → Service → Client</code></p><p>Quiet surfaces keep the conversation readable. <a class="chat-link" href="#">Example source</a></p>':''}</div></div></article>`).join('');
+  doc.querySelector('#global-agent-prompt').value='Keep this unsent Nexus draft';
+  doc.querySelector('#agent-prompt').value='Keep this unsent repository draft';
+  for(const prefix of ['','global-']){doc.querySelector('#'+prefix+'agent-provider').innerHTML='<option>Codex</option>';doc.querySelector('#'+prefix+'agent-model').innerHTML='<option>GPT-6-Astra</option>';}
+  const writes=[],cache=new Map();
+  const picker=initializeNexusThemePicker({document:doc,storage:{getItem:key=>cache.get(key),setItem:(key,value)=>cache.set(key,value)},save:async(id,selections)=>writes.push({id,selections}),setAppearance:value=>doc.documentElement.dataset.theme=value});
+  const chooser=doc.querySelector('#nexus-theme-picker');
+  return{iframe,doc,win,picker,writes,cache,chooser};
+}
+async function checks(){
+  const failures=[];let count=0;const output=document.querySelector('#result');output.textContent='Checking twelve palettes, per-appearance persistence and real browser bounds…';
+  for(const width of [640,1440,2560])for(const font of ['system','comic-sans']){
+    const f=await frame(width,'dark',font),{doc,win,picker,chooser,writes}=f;
+    const panel=doc.querySelector('#global-codex-panel'),conversation=doc.querySelector('#global-agent-conversation'),scroll=conversation.closest('.chat-scroll-region');
+    if(scroll)scroll.scrollTop=100;
+    const originalScroll=scroll?.scrollTop,originalNodes=[...conversation.children],repoColour=win.getComputedStyle(doc.querySelector('#workspace')).color;
+    doc.querySelector('#nexus-theme-toggle').click();await pause(win);
+    for(const appearance of ['dark','light']){
+      chooser.querySelector(`[data-nexus-appearance="${appearance}"]`).click();await pause(win);
+      const choices=nexusThemeChoices(appearance),buttons=[...chooser.querySelectorAll('[data-nexus-theme-choice]')];
+      for(const choice of choices){
+        const button=buttons.find(item=>item.dataset.nexusThemeChoice===choice.id);button.click();await pause(win);
+        const problem=[];
+        if(buttons.length!==6||button.getAttribute('aria-label')!==choice.label+' theme'||doc.querySelector('#nexus-theme-label').textContent!==choice.label)problem.push('wrong choice count or mode-specific name');
+        if(button.getAttribute('aria-pressed')!=='true'||buttons.filter(item=>item.getAttribute('aria-pressed')==='true').length!==1)problem.push('selection is not unique/accessibly marked');
+        for(const[key,value]of Object.entries(nexusThemeVariables(choice.id,appearance)))if(panel.style.getPropertyValue(key)!==value)problem.push('missing palette '+key);
+        const bounds=chooser.getBoundingClientRect();if(bounds.left<10||bounds.top<10||bounds.right>doc.documentElement.clientWidth-10||bounds.bottom>doc.documentElement.clientHeight-10)problem.push({popoverOverflow:bounds.toJSON()});
+        if(button.scrollWidth>button.clientWidth)problem.push('choice content overflows');
+        if(doc.querySelector('#global-agent-prompt').value!=='Keep this unsent Nexus draft'||doc.querySelector('#agent-prompt').value!=='Keep this unsent repository draft'||originalNodes.some((node,i)=>conversation.children[i]!==node)||scroll?.scrollTop!==originalScroll)problem.push('chat/draft/scroll changed');
+        if(win.getComputedStyle(doc.querySelector('#workspace')).color!==repoColour&&appearance==='dark')problem.push('Nexus palette changed the repository theme');
+        count++;if(problem.length)failures.push({width,font,appearance,theme:choice.label,problem});
+      }
+    }
+    doc.documentElement.dataset.theme='dark';await pause(win);await picker.select('forest');
+    doc.documentElement.dataset.theme='light';await pause(win);await picker.select('midnight');
+    const savedCount=writes.length;
+    doc.documentElement.dataset.theme='dark';await pause(win);
+    if(doc.querySelector('#nexus-theme-label').textContent!=='Forest Ink')failures.push({width,font,problem:'dark choice not restored'});
+    doc.documentElement.dataset.theme='light';await pause(win);
+    if(doc.querySelector('#nexus-theme-label').textContent!=='Porcelain'||writes.length!==savedCount)failures.push({width,font,problem:'light choice not restored or mode switch wrote theme preferences'});
+    const cached=JSON.parse(f.cache.get('argus-nexus-themes'));if(cached.dark!=='forest'||cached.light!=='midnight')failures.push({width,font,problem:'mode cache lost a choice'});
+    chooser.querySelector('[data-theme-close]').click();if(chooser.matches(':popover-open')||doc.activeElement!==doc.querySelector('#nexus-theme-toggle'))failures.push({width,font,problem:'close/focus failed'});
+    count++;f.iframe.remove();output.textContent=JSON.stringify({status:'CHECKING',checks:count,failures},null,2);
+  }
+  output.textContent=JSON.stringify({status:failures.length?'FAIL':'PASS',checks:count,failures},null,2);
+}
+async function preview(){const target=document.querySelector('#preview');target.replaceChildren();const f=await frame(Number(document.querySelector('#width').value),document.querySelector('#appearance').value,document.querySelector('#font').value,target);f.doc.querySelector('#nexus-theme-toggle').click();}
+document.querySelector('#run').onclick=checks;document.querySelector('#show').onclick=preview;
+try{await checks();await preview();}catch(error){document.querySelector('#result').textContent='FIXTURE ERROR: '+error.stack;}
+</script></body></html>

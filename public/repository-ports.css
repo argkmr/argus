@@ -1,0 +1,57 @@
+.context-strip > .repository-ports { display: flex; align-items: center; min-width: 0; }
+.repository-ports .repository-ports-trigger { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; max-width: 190px; margin: 0; padding: 4px 8px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--text); box-shadow: none; text-align: left; line-height: 1.25; cursor: pointer; }
+.repository-ports .repository-ports-trigger:hover, .repository-ports .repository-ports-trigger[aria-expanded="true"] { background: var(--surface-2); border-color: var(--line); }
+.repository-ports .repository-ports-trigger-copy { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; gap: 3px; }
+.repository-ports .repository-ports-trigger-port { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.repository-ports .repository-ports-trigger-state { color: var(--muted-2, var(--muted)); font-size: 10px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.repository-ports .repository-ports-dot { display: block; flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
+.repository-ports .repository-ports-chevron { display: block; flex: 0 0 14px; width: 14px; height: 14px; align-self: center; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; color: var(--muted); }
+.repository-ports-trigger[aria-expanded="true"] .repository-ports-chevron { transform: rotate(180deg); }
+.repository-ports-trigger[data-state="listening"] .repository-ports-dot { background: var(--green, var(--accent)); }
+.repository-ports-trigger[data-state="running"] .repository-ports-dot { background: var(--accent); }
+.repository-ports-trigger[data-state="conflict"] .repository-ports-dot { background: var(--red, #ff6977); }
+.repository-ports-trigger[data-state="shared"] .repository-ports-dot, .repository-ports-trigger[data-state="occupied"] .repository-ports-dot { background: var(--amber, #e5b96b); }
+.repository-ports-panel { position: fixed; z-index: 160; display: flex; flex-direction: column; width: min(360px, calc(100vw - 24px)); max-height: calc(100vh - 100px); margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); box-shadow: 0 12px 36px #0005; font-size: 12px; }
+.repository-ports[hidden], .repository-ports-panel[hidden], .repository-ports [hidden], .repository-ports-panel [hidden] { display: none !important; }
+.repository-ports-heading { display: flex; align-items: center; gap: 5px; flex: none; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.repository-ports-heading h3 { flex: 1; margin: 0; font-size: 13px; font-weight: 600; }
+.repository-ports-panel .repository-ports-icon { display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 1px solid transparent; background: transparent; color: var(--muted); box-shadow: none; font-size: 18px; border-radius: 5px; }
+.repository-ports-panel button:hover:not(:disabled) { background: var(--surface-3); color: var(--text); }
+.repository-ports-panel button:disabled { opacity: .45; cursor: default; }
+.repository-ports-panel button:focus-visible, .repository-ports-panel input:focus-visible, .repository-ports-panel select:focus-visible, .repository-ports-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.repository-ports-body { min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 12px; scrollbar-width: thin; }
+.repository-ports-current { padding: 11px 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); }
+.repository-ports-scope { margin: 0; font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
+.repository-ports-label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 11px; }
+.repository-ports-panel .repository-ports-select, .repository-ports-panel .repository-ports-input { min-width: 0; width: 100%; min-height: 33px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 12px; }
+.repository-ports-panel .repository-ports-input { font-variant-numeric: tabular-nums; }
+.repository-ports-summary { margin: 5px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.repository-ports-summary[data-state="conflict"], .repository-ports-message { color: var(--red, #ff6977); }
+.repository-ports-summary[data-state="shared"], .repository-ports-summary[data-state="occupied"] { color: var(--amber, #e5b96b); }
+.repository-ports-summary[data-state="listening"], .repository-ports-success { color: var(--green, var(--accent)); }
+.repository-ports-message, .repository-ports-success { margin: 10px 0; line-height: 1.5; overflow-wrap: anywhere; }
+.repository-ports-form { padding: 10px 0 0; margin: 10px 0 0; border: 0; border-top: 1px solid var(--line); background: transparent; }
+.repository-ports-body > .repository-ports-label { margin-bottom: 10px; }
+.repository-ports-field-row { display: flex; align-items: center; gap: 8px; }
+.repository-ports-panel .repository-ports-save { flex: none; min-height: 33px; padding: 6px 11px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text); font-size: 12px; box-shadow: none; }
+.repository-ports-panel .repository-ports-configure { margin-top: 10px; padding: 6px 10px; min-height: 30px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text); font-size: 11px; box-shadow: none; }
+.repository-ports-management, .repository-ports-notice, .repository-ports-checked { margin: 7px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+.repository-ports-file { margin: 9px 0 0; color: var(--text); font: 10px/1.6 "SFMono-Regular", Consolas, Menlo, monospace; overflow-wrap: anywhere; }
+.repository-ports-section { margin-top: 15px; }
+.repository-ports-section h4 { margin: 0 0 5px; color: var(--muted); font-size: 11px; font-weight: 500; }
+.repository-ports-list { max-height: 240px; overflow: auto; scrollbar-width: thin; }
+.repository-ports-row { display: grid; grid-template-columns: 62px minmax(0, 1fr); align-items: center; gap: 12px; min-width: 0; padding: 8px 5px; border-radius: 5px; }
+.repository-ports-row + .repository-ports-row { border-top: 1px solid var(--line); }
+.repository-ports-row[data-selected-port="true"] { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+.repository-ports-row-port { padding: 0; border: 0; background: transparent; color: var(--text); font: 11px/1.5 "SFMono-Regular", Consolas, Menlo, monospace; font-variant-numeric: tabular-nums; }
+.repository-ports-row-identity { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.repository-ports-row-identity strong { font-size: 11px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.repository-ports-row-status { color: var(--muted); font-size: 10px; line-height: 1.4; }
+.repository-ports-checked { margin-top: 12px; text-align: right; }
+@media (max-width: 700px) {
+  .context-strip > .repository-ports { flex: none; padding-left: 10px; padding-right: 0; }
+  .context-strip .repository-ports .repository-ports-trigger { flex: none; max-width: 155px; padding-inline: 3px; gap: 5px; }
+  .repository-ports .repository-ports-trigger-state { max-width: 120px; }
+  .context-strip .repository-context-actions #project-structure-toggle { width: 32px; padding-inline: 0; }
+  .context-strip .repository-context-actions #project-structure-toggle strong { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}

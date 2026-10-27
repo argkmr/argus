@@ -1,0 +1,28 @@
+/* Argus owns this popup, so typography, colors and focus stay in the active theme. */
+.dp-time-field { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.dp-time-input-wrap { position: relative; min-width: 0; }
+.dp-dialog-content .dp-time-input-wrap .dp-time-display { padding-right: 38px; font-variant-numeric: tabular-nums; }
+.dp-time-display[aria-invalid="true"] { border-color: var(--orange); }
+.dp-time-trigger { position: absolute; inset-block: 3px; right: 3px; width: 31px; padding: 0; display: grid; place-items: center; border: 0; border-radius: 5px; color: var(--muted); background: transparent; }
+.dp-time-trigger:hover:not(:disabled), .dp-time-trigger[aria-expanded="true"] { color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.dp-time-trigger svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+.dp-time-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.dp-time-popup, .dp-time-popup:popover-open { position: fixed; inset: auto; margin: 0; padding: 11px; min-width: 0; width: 272px; box-sizing: border-box; display: flex; flex-direction: column; gap: 9px; overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--text); font-family: inherit; box-shadow: 0 10px 32px #0005; }
+.dp-time-popup[hidden] { display: none !important; }
+.dp-time-popup::backdrop { background: transparent; }
+.dp-time-popup-heading, .dp-time-popup-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex: 0 0 auto; }
+.dp-time-popup-heading strong { font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.dp-time-popup-heading > span, .dp-time-popup-footer > span { color: var(--muted); font-size: 9px; line-height: 1.5; }
+.dp-time-columns { min-height: 0; display: grid; grid-template-columns: 1fr 1fr .9fr; gap: 7px; flex: 1 1 auto; }
+.dp-time-column { display: flex; flex-direction: column; min-width: 0; min-height: 0; gap: 5px; }
+.dp-time-column > span { font-size: 9px; font-weight: 600; color: var(--muted); text-align: center; line-height: 1.5; }
+.dp-time-options { position: relative; min-height: 0; max-height: 166px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line) transparent; display: flex; flex-direction: column; gap: 3px; padding: 3px; border: 1px solid var(--line-soft); border-radius: 7px; background: var(--bg); }
+.dp-time-options button { flex: 0 0 auto; border: 1px solid transparent; padding: 5px 3px; min-height: 27px; width: 100%; border-radius: 5px; background: transparent; color: var(--text); font: inherit; font-size: 11px; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.dp-time-options button:hover:not(:disabled) { background: var(--surface-3); }
+.dp-time-options button[aria-selected="true"] { border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 12%, var(--bg)); color: var(--accent); font-weight: 650; }
+.dp-time-options button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.dp-time-popup-footer { padding-top: 2px; }
+.dp-time-popup-footer button { border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text); font: inherit; font-size: 10px; font-weight: 600; line-height: 1.5; padding: 4px 10px; }
+.dp-time-popup-footer button:hover:not(:disabled) { background: var(--surface-3); }
+.dp-time-popup :disabled, .dp-time-trigger:disabled { opacity: .5; cursor: default; }
+@media (max-height: 500px) { .dp-time-options { max-height: 112px; } .dp-time-popup, .dp-time-popup:popover-open { gap: 6px; padding: 9px; } }

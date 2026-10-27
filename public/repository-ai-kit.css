@@ -1,0 +1,8 @@
+.repository-ai-kit { position: relative; margin-left: auto; flex: 0 0 auto; font-size: 11px; }
+.repository-ai-kit > summary { cursor: pointer; list-style: none; padding: 6px 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--text); }
+.repository-ai-kit > summary span { color: var(--muted); margin-left: 6px; }
+.repository-ai-kit > section { position: absolute; z-index: 55; right: 0; top: calc(100% + 8px); width: min(360px, 85vw); padding: 16px; background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 40px #0005; }
+.repository-ai-kit p { margin: 10px 0; line-height: 1.5; overflow-wrap: anywhere; }
+.repository-ai-kit section > div { display: flex; flex-wrap: wrap; gap: 7px; }
+.repository-ai-kit button { padding: 7px 10px; border-radius: 6px; }
+.repository-ai-kit small { display: block; margin-top: 12px; color: var(--muted); line-height: 1.5; }

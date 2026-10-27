@@ -1,0 +1,56 @@
+.chat-revisions-button { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; min-height: 27px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 7px; background: transparent; color: var(--muted); font: inherit; font-size: 10px; line-height: 1.4; }
+.chat-revisions-button:hover { color: var(--text); background: var(--surface-2); }
+.chat-revisions-button:focus-visible, #chat-revisions-dialog :is(button, select, summary, [tabindex]):focus-visible { outline: 2px solid var(--blue, var(--accent)); outline-offset: 2px; }
+#chat-revisions-dialog { --revision-surface: var(--surface, #111419); --revision-text: var(--text, #f2f4f7); --revision-muted: var(--muted, #8d96a3); --revision-line: var(--line, #272d36); border: 1px solid var(--revision-line); border-radius: 16px; color: var(--revision-text); }
+/* This native modal is independent of the full-workspace legacy overlays. */
+#chat-revisions-dialog[open] { inset: 0 !important; margin: auto !important; width: min(980px, calc(100% - 32px)) !important; height: min(780px, calc(100% - 32px)) !important; max-width: none; max-height: calc(100% - 32px) !important; padding: 0 !important; display: block !important; overflow: hidden !important; background: var(--revision-surface) !important; backdrop-filter: none !important; box-shadow: 0 18px 70px #0006; }
+#chat-revisions-dialog::backdrop { background: #0009; backdrop-filter: blur(3px); }
+.chat-revisions-card { height: 100%; min-height: 0; display: grid; grid-template-rows: auto auto auto minmax(0, 1fr); }
+.chat-revisions-header { display: flex; align-items: flex-start; gap: 20px; padding: 20px 24px 16px; border-bottom: 1px solid var(--revision-line); }
+.chat-revisions-header > div { flex: 1; min-width: 0; }
+.chat-revisions-header h2 { margin: 4px 0 8px; font-size: 23px; line-height: 1.25; }
+.chat-revisions-header p { margin: 0; color: var(--revision-muted); font-size: 12px; line-height: 1.6; }
+.chat-revisions-header .chat-revisions-eyebrow { font-size: 10px; letter-spacing: .1em; font-weight: 650; }
+.chat-revisions-header button { flex: 0 0 30px; width: 30px; height: 30px; padding: 0; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--revision-muted); font: 23px/1 system-ui, sans-serif; }
+.chat-revisions-header button:hover { background: var(--surface-2); color: var(--revision-text); border-color: var(--revision-line); }
+.chat-revisions-toolbar { padding: 14px 24px 10px; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 7px 12px; }
+.chat-revisions-toolbar label { font-size: 12px; color: var(--revision-muted); }
+.chat-revisions-toolbar select { width: 100%; min-width: 0; max-width: 100%; padding: 8px 30px 8px 10px; border: 1px solid var(--revision-line); border-radius: 8px; background: var(--surface-2); color: var(--revision-text); font: inherit; font-size: 12px; text-overflow: ellipsis; }
+.chat-revisions-toolbar [role="status"] { grid-column: 1 / -1; margin: 0; min-height: 18px; font-size: 11px; line-height: 1.5; color: var(--revision-muted); }
+.chat-revisions-error { display: flex; align-items: center; gap: 12px; padding: 0 24px; }
+.chat-revisions-error:has([data-revisions-error]:empty) { display: none; }
+.chat-revisions-error p { flex: 1; margin: 0 0 12px; color: var(--red, #ff6b72); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.chat-revisions-error button { margin-bottom: 12px; padding: 6px 12px; font-size: 12px; }
+#chat-revisions-dialog [hidden] { display: none !important; }
+.chat-revisions-transcript { min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: 0 24px 24px; user-select: text; }
+.chat-revisions-snapshot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 12px 0; color: var(--revision-muted); font-size: 11px; border-bottom: 1px solid var(--revision-line); }
+.chat-revisions-message { padding: 20px 0; border-bottom: 1px solid var(--revision-line); }
+.chat-revisions-message > header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; font-size: 12px; margin-bottom: 10px; }
+.chat-revisions-message time { color: var(--revision-muted); font-size: 10px; }
+.chat-revisions-message.is-edited { margin-top: 12px; padding: 16px; border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--revision-line)); border-radius: 10px; background: color-mix(in srgb, var(--accent) 4%, var(--revision-surface)); }
+.chat-revisions-edited { color: var(--accent); font-size: 10px; margin-left: auto; }
+.chat-revisions-content { min-width: 0; font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; }
+.chat-revisions-content > :first-child { margin-top: 0; }
+.chat-revisions-content > :last-child { margin-bottom: 0; }
+.chat-revisions-content :is(pre, table) { max-width: 100%; overflow: auto; }
+.chat-revisions-content pre { font-size: 12px; }
+.chat-revisions-content img { max-width: 100%; height: auto; }
+.chat-revisions-content table { display: block; border-collapse: collapse; }
+.chat-revisions-content :is(th, td) { padding: 8px; border: 1px solid var(--revision-line); }
+.chat-revisions-content a { color: var(--blue, var(--accent)); }
+.chat-revisions-suffix { margin: 18px 0 0; color: var(--revision-muted); font-size: 11px; }
+.chat-revisions-context, .chat-revisions-notes { margin: 12px 0; color: var(--revision-muted); font-size: 12px; }
+.chat-revisions-context summary, .chat-revisions-notes summary { cursor: pointer; padding: 4px 0; }
+.chat-revisions-context pre, .chat-revisions-notes pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; padding: 12px; background: var(--surface-2); border-radius: 8px; }
+.chat-revisions-attachments { display: flex; flex-wrap: wrap; list-style: none; gap: 6px; padding: 0; margin: 8px 0; }
+.chat-revisions-attachments li { padding: 5px 8px; border: 1px solid var(--revision-line); border-radius: 7px; font-size: 11px; }
+.chat-revisions-attachments small { color: var(--revision-muted); }
+.chat-revisions-empty { padding: 32px 0; color: var(--revision-muted); font-size: 13px; }
+@media (max-width: 600px) {
+  #chat-revisions-dialog[open] { width: calc(100% - 16px) !important; height: calc(100% - 16px) !important; max-height: calc(100% - 16px) !important; border-radius: 11px; }
+  .chat-revisions-header { padding: 16px; gap: 10px; }
+  .chat-revisions-header h2 { font-size: 20px; }
+  .chat-revisions-toolbar { padding: 12px 16px 8px; grid-template-columns: minmax(0, 1fr); }
+  .chat-revisions-error { padding-inline: 16px; }
+  .chat-revisions-transcript { padding-inline: 16px; }
+}

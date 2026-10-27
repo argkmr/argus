@@ -1,0 +1,12 @@
+simulation: codex-public-rates
+routing: path
+mocks:
+  - routeKey: success
+    path: ../mocks/codex-public-rates/config.yaml
+  - routeKey: errors500
+    path: ../mocks/codex-public-rates-errors/config.yaml
+    scenarios:
+      - overrides:
+          conditions:
+            error:
+              status_code: 500

@@ -1,0 +1,26 @@
+/* One fixed-size entry point; results float above, never resize, the tab rail. */
+.repository-tab-search-toggle { display: inline-flex; flex: 0 0 32px; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--muted); }
+.repository-tab-search-toggle svg { display: block; flex: none; width: 17px; height: 17px; }
+.repository-tab-search-toggle:hover, .repository-tab-search-toggle[aria-expanded="true"] { color: var(--text); border-color: var(--line); background: var(--surface); }
+.repository-tab-search-popover { position: fixed; inset: auto; width: 380px; max-width: calc(100% - 18px); max-height: min(480px, calc(100% - 62px)); margin: 0; padding: 10px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text); box-shadow: 0 14px 42px #0005; }
+.repository-tab-search-popover:popover-open { display: flex; flex-direction: column; gap: 8px; }
+.repository-tab-search-popover::backdrop { background: transparent; }
+.repository-tab-search-heading { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 8px; }
+.repository-tab-search-popover h2 { margin: 0; padding-left: 4px; font-size: 12px; font-weight: 650; line-height: 1.5; }
+#repository-tab-search-close { display: grid; flex: none; place-items: center; width: 26px; height: 26px; padding: 0; border-color: transparent; background: transparent; color: var(--muted); font: 18px/1 ui-sans-serif, system-ui, sans-serif; }
+#repository-tab-search-close:hover { background: var(--surface-2); color: var(--text); }
+.repository-tab-search-field { display: block; flex: none; min-width: 0; }
+#repository-tab-search-input { display: block; width: 100%; min-width: 0; height: 34px; margin: 0; padding: 0 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--text); font-size: 12px; line-height: 1.5; }
+#repository-tab-search-input::placeholder { color: var(--muted); }
+.repository-tab-search-results { flex: 1 1 auto; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.repository-tab-search-result { display: flex; align-items: center; gap: 9px; width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid transparent; border-radius: 7px; background: transparent; text-align: left; color: var(--text); }
+.repository-tab-search-result:hover, .repository-tab-search-result:focus-visible { background: var(--surface-2); border-color: var(--line); }
+.repository-tab-search-result[aria-current="page"] { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+.repository-tab-search-copy { display: flex; flex: 1 1 auto; flex-direction: column; gap: 3px; min-width: 0; }
+.repository-tab-search-copy > :is(strong, small, em) { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.repository-tab-search-copy strong { font-size: 12px; font-weight: 600; line-height: 1.4; }
+.repository-tab-search-copy small { color: var(--muted); font-size: 10px; line-height: 1.4; }
+.repository-tab-search-copy em { color: var(--muted-2); font-size: 10px; font-style: normal; line-height: 1.4; }
+.repository-tab-search-empty { margin: 0; padding: 16px 10px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.repository-tab-search-status { flex: none; margin: 0; padding: 3px 4px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+.repository-tab-search-toggle:focus-visible, #repository-tab-search-close:focus-visible, #repository-tab-search-input:focus-visible, .repository-tab-search-result:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }

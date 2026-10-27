@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Argus IDE — isolated UX preview</title>
+  <link rel="stylesheet" href="/legacy/styles.css">
+  <link rel="stylesheet" href="/legacy/repository-ide-shell.css">
+  <link rel="stylesheet" href="/legacy/repository-ide.css">
+  <style>
+    body { display: flex; flex-direction: column; font: 13px/1.4 ui-sans-serif, system-ui, sans-serif; }
+    .fixture-header { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+    .fixture-header strong { color: var(--accent); }
+    .fixture-header small { color: var(--muted); margin-right: auto; }
+    .fixture-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .fixture-controls button, .fixture-controls select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); color: var(--text); font-size: 11px; }
+    #fixture-workspace { display: flex; flex-direction: column; min-height: 0; flex: 1; width: 100%; max-width: 1600px; margin: 0 auto; border-inline: 1px solid var(--line); }
+    #fixture-workspace[data-narrow="true"] { max-width: 640px; }
+    #fixture-ide-host { flex: 1; min-height: 0; }
+    #fixture-chat { flex: 0 0 85px; padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--line); color: var(--muted); }
+    #fixture-chat[hidden] { display: none; }
+    #fixture-chat strong { color: var(--text); }
+    #fixture-status { flex: none; min-height: 24px; padding: 4px 14px; color: var(--muted); font-size: 11px; border-top: 1px solid var(--line); }
+    #fixture-status[data-error="true"] { color: var(--red); }
+    #fixture-services { display: flex; flex: none; flex-wrap: wrap; gap: 8px 16px; padding: 8px 14px; border-bottom: 1px solid var(--line); background: var(--surface); font-size: 11px; }
+    #fixture-services > div { display: flex; align-items: center; gap: 8px; }
+    #fixture-services button { padding: 3px 6px; border: 1px solid var(--line); border-radius: 5px; color: var(--text); background: var(--surface-2); font-size: 11px; }
+    #fixture-services [data-state="running"] { color: var(--green); }
+  </style>
+</head>
+<body class="task-context-visible repository-ide-enabled" data-view="repository">
+  <header class="fixture-header">
+    <strong>ISOLATED QA</strong>
+    <small>Synthetic code and debugger events. No live app, real repository, service or model request.</small>
+    <div class="fixture-controls" aria-label="Isolated preview controls">
+      <label>Repository <select id="fixture-repository"><option value="isolated-ide-ux-preview">Review service</option><option value="isolated-invoice-preview">Invoice service</option></select></label>
+      <button type="button" id="fixture-theme">Light theme</button>
+      <button type="button" id="fixture-width">Narrow layout</button>
+      <label><input type="checkbox" id="fixture-delay-start"> Delay next launch</label>
+      <button type="button" id="fixture-release-start" disabled>Release launch</button>
+      <label>Target <select id="fixture-target"><option value="listening">Listening</option><option value="starting">Starting</option><option value="missing">No target</option><option value="unavailable">No adapter</option></select></label>
+      <button type="button" id="fixture-hit">Simulate breakpoint hit</button>
+      <button type="button" id="fixture-output">Add debugger output</button>
+      <button type="button" id="fixture-terminate">Simulate session end</button>
+    </div>
+  </header>
+  <section id="fixture-services" aria-label="Synthetic Services mirror"></section>
+  <main id="fixture-workspace">
+    <div class="context-strip">
+      <div><span class="live-dot"></span><strong id="context-repo">Review service · synthetic</strong><small>isolated context</small></div>
+      <div class="context-stat"><span id="context-branch">feature/review-ux</span><small>current branch</small></div>
+      <div class="context-stat"><span>0</span><small>changed files</small></div>
+      <nav class="repository-context-actions" aria-label="Repository tools">
+        <button id="repository-chat-toggle" type="button" aria-pressed="true" aria-expanded="true" aria-controls="fixture-chat">Hide AI chat</button>
+        <button id="project-structure-toggle" class="project-structure-toggle" type="button"><span>⌘</span><strong>Project Structure</strong></button>
+      </nav>
+    </div>
+    <div id="fixture-ide-host"></div>
+    <section id="fixture-chat" aria-label="Synthetic AI chat"><strong>AI chat preview</strong><br>This placeholder only checks hide/show behavior. It cannot send requests.</section>
+  </main>
+  <div id="fixture-status" role="status">Loading production IDE assets with synthetic API data…</div>
+  <section id="terminal-panel" class="terminal-panel hidden" aria-label="Repository terminal">
+    <div id="terminal-resizer" class="terminal-resizer" role="separator" aria-orientation="horizontal" aria-label="Resize terminal"></div>
+    <header>
+      <div><span class="terminal-status-dot"></span><strong id="terminal-title">Terminal</strong><small id="terminal-cwd">Active repository</small></div>
+      <nav><button id="terminal-clear" type="button" title="Clear terminal (⌘K)">Clear</button><button id="terminal-restart" type="button">Restart</button><button id="terminal-minimize" type="button" aria-label="Minimize terminal">—</button><button id="terminal-close" type="button" aria-label="Close terminal">×</button></nav>
+    </header>
+    <div id="terminal-output" aria-label="Interactive zsh terminal"></div>
+    <p id="terminal-status" role="status" aria-live="polite" hidden></p>
+  </section>
+  <script type="module" src="/ide-ux-preview-browser.mjs"></script>
+</body>
+</html>
